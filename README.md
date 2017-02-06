@@ -15,7 +15,6 @@ This project involves exploring the U.S. National Oceanic and Atmospheric Admini
 
 
 
-
 ## Data
 
 The data for this assignment come in the form of a comma-separated-value file compressed via the bzip2 algorithm to reduce its size. You can download the file from the course web site:
@@ -31,7 +30,7 @@ The events in the database start in the year 1950 and end in November 2011. In t
 
 
 
-**Review criteria **
+**Review criteria**
 
 1. Has either a (1) valid RPubs URL pointing to a data analysis document for this assignment been submitted; or (2) a complete PDF file presenting the data analysis been uploaded?
 2. Is the document written in English?
