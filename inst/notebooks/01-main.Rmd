@@ -107,6 +107,7 @@ byEvent.0 <- stormdata %>%
 byEvent.0
 ```
 
+
 ```{r}
 byEvent.1 <- stormdata %>%
   select(EVTYPE, FATALITIES, INJURIES) %>%
