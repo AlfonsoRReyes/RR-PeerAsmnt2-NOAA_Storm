@@ -254,6 +254,11 @@ dim(unknown)[1]
 There are `r dim(unknown)[1]` observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
 
 ### Saving some data
+We save few datasets that are much smaller in size than the original dataset.
+
+1. byYearEvent: is a dataset that contains a summary of the events, fatalities, injuries, economic losses in property and crops in millions of US$. TO-DO: convert dates to year.
+
+2. byYearSummary: a dataset showing the year and the wather impact on life and the economy. Four variables: year, fatalities, injured and economy losses in millions of USD.
 
 ```{r}
 # By year, by event
