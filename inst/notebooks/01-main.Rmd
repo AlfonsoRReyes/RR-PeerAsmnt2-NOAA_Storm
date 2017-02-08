@@ -32,7 +32,7 @@ library(lubridate)
 
 ```
 
-### Set up project folders with `rprojroot`
+### Set up project folders with `rprojroot` package
 ```{r results='hold'}
 # package rprojroot required
 root <- rprojroot::is_rstudio_project
@@ -48,6 +48,7 @@ project.data
 project.extdata
 project.R
 ```
+
 
 ### Downloading the data
 We found a problem while trying to download the data file from the internet. The `bunzip2` format is not properly managed by the `download.file` function. So, we have to add a new function `bunzip2` from the package `R.utils` to download and unpack the compresed file. Of course, this could have been done by using the `read.csv` function to read the data file directly but that would be a "one-off" operation. To make the function `downloadZip` reusable for the future we used `bunzip2`. There is a flag in the function that allows the selection of that particular compression format.
@@ -85,7 +86,7 @@ stormdata.raw <- read.csv(dataFile)
 # stormdata <- stormdata.raw          # for the moment we will use a shorter name
 ```
 
-
+### How our raw data look?
 ```{r results='hold'}
 # properties of the dataset
 dims <- dim(stormdata.raw)
@@ -98,11 +99,6 @@ The names of the variables are:
 names(stormdata.raw)
 ```
 
-
-```{r}
-# str(stormdata.raw)
-# summary(stormdata.raw)
-```
 
 ### What variables do we keep for our analysis?
 
@@ -119,7 +115,7 @@ stormdata <- stormdata.raw %>%
 rm(stormdata.raw)     # release big dataset
 ```
 
-If we save this data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the remarks, the new dataset shrinks to only 4.6 megabytes.
+To save memory we release now the 'stormdata.raw`  object.
 
 
 We have an observation ID with the variable `REFNUM`. We check if all its values are unique:
@@ -149,10 +145,15 @@ stormdata.small <- stormdata %>%
 as_data_frame(stormdata.small)
 ```
 
+
+### Saving a portion of the dataset
+If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file.
+
 ```{r}
 # save unique events by year
 save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
 ```
+
 
 ### Event Types `EVTYPE`
 
@@ -290,9 +291,6 @@ Here is how we know how many observations do not carry the "K", "M" and "B" iden
 unknown <- stormdata %>%
   select(STATE, EVTYPE, PROPDMGEXP, CROPDMGEXP, REMARKS) %>%
   filter(!toupper(PROPDMGEXP) %in% c("K", "M", "B") | !toupper(CROPDMGEXP) %in% c("K", "M", "B"))
-
-dim(unknown)[1]
-
 
 ```
 

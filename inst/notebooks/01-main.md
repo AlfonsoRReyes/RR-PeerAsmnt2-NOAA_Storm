@@ -100,11 +100,6 @@ stormdata.raw <- read.csv(dataFile)
 ```r
 # properties of the dataset
 dims <- dim(stormdata.raw)
-dims
-```
-
-```
-[1] 902297     37
 ```
 
 There are 902297 observations and 37 variables.
@@ -263,11 +258,12 @@ an error!
 
 There are 985 different type of events.
 
+### Create data frame for 1st question
 We want to find now which type of events is more harmful to population health. We could group by `EVTYPE` and showing the variables FATALITIES and INJURIES.
 
 
-
 ```r
+# byEvent.0: dataset where main sort criteria is FATALITIES
 byEvent.0 <- stormdata %>%
   select(EVTYPE, FATALITIES, INJURIES) %>%
   group_by(EVTYPE) %>%
@@ -296,6 +292,7 @@ byEvent.0
 
 
 ```r
+# byEvent.1: dataset where the main sort criteria is INJURIES
 byEvent.1 <- stormdata %>%
   select(EVTYPE, FATALITIES, INJURIES) %>%
   group_by(EVTYPE) %>%
@@ -322,6 +319,7 @@ byEvent.1
 # ... with 975 more rows
 ```
 
+     
 We plot now the top 5 events that cause more harm on the population:
 
 
@@ -345,7 +343,7 @@ gridExtra::grid.arrange(p1, p2)
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
 
-## Economic Damage
+## Assessing the Economic Damage
 The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`.
 
 We will start by converting the monetary damages to a consistent units. We will choose thousands.
@@ -385,7 +383,7 @@ Groups: EVTYPE [985]
 # ... with 902,287 more rows
 ```
 
-We converts the thousands to millions of US$ and only one variable, the total economic damage.
+We convert the thousands to millions of US$ and only one variable, the total economic damage.
 
 
 ```r
