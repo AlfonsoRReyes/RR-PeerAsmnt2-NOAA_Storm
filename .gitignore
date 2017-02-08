@@ -2,6 +2,11 @@
 .Rhistory
 .RData
 .Ruserdata
-*.html
+
+README\.html
+
+inst/notebooks/01-main\.html
+
+inst/notebooks/01-main_cache/html/__packages
 
 inst/notebooks/01-main_cache/html/
