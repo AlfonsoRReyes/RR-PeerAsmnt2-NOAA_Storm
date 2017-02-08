@@ -19,13 +19,21 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA, error = TRUE)
 
 ## Synopsis
 <ten sentences>
+weather impact on the economy: property and crops.
+Does not take into account other effects such as defferred revenue, no income,
+Years recorded from 1950 till 2011.
+Investigate how much is the impact of the weather
+Impact on the popuplation: fatalities, injured.
+For the 1st question we will use the variables: EVTYPE, FATALITIES and INJURIES.
+For the 2nd question, we will use the variables: EVTYPE, PROPDMG, CROPDMG, PROPDMGEXP and CROPDMGEXP.
+Other analysis can later be performed such as if the weather effects have been improving or worsening, what states have suffered the largest impact, what counties have the highest economic loss, etc.
 
 
 
 ## Data Processing
 The data processing consists in the following steps:
 
-1. Download the raw data file from the internet using the `download.file` function.
+1. Download the raw data file from the internet theme(axis.text.x = element_text(angle = 30, hjust = 1))using the `download.file` function.
 2. Unpack the downloaded file (535+ MB) with the function `bunzip` into a CSV file named as `dataset.csv`.
 3. Load the CSV file in the object `stormdata.raw`: 902,297 observations and 37 variables.
 4. Perform a quick analysis of the dataset `stormdata.raw` before applying data transformations.
