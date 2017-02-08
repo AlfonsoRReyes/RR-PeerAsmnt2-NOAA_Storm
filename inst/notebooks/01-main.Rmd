@@ -173,6 +173,26 @@ stormdata.small <- stormdata %>%
 as_data_frame(stormdata.small)
 ```
 
+```{r}
+# what is the worst weather event in 2005?
+worst <- stormdata.small %>%
+  select(REFNUM, DATE, STATE, EVTYPE, PROPDMG, PROPDMGEXP) %>%
+  mutate(PROPDMG = ifelse(toupper(PROPDMGEXP) == "M", PROPDMG/1000, 
+                          ifelse(toupper(PROPDMGEXP) == "K", PROPDMG/1E6,
+                                 ifelse(toupper(PROPDMGEXP) == "B", PROPDMG, 0)))) %>%
+  #filter(PROPDMGEXP == "B") %>%
+  arrange(desc(PROPDMG))
+
+worst
+```
+
+```{r}
+events <- stormdata %>%
+  select(REFNUM, REMARKS, EVTYPE) %>%
+  filter(REFNUM %in% c(605943, 577616, 577615, 581535))
+events
+```
+
 
 ### Saving a portion of the dataset
 If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file.
@@ -441,7 +461,11 @@ These are the results:
 
 3. On the economic impact, we classified the weather events from the most damaging to the economy to the less. They are: flood, hurricane/typhoon, tornados, storm surge, hail, flash flodd, drought, river flood and ice storms. The economic impact totals both, property and crops.
 
-4. Other additional findings were that the weather events have been increasing its damage to the economy and for the population in general. From the plots, we can see that from 1992 onwards, the effects have been disastrous. The losses in the economic have ascended from few millions to tens or hundreds of billions! On the population we can appreciate an increase in mortality from about a hundred in average until the end of the 80s to five hundred to fifteen hundred fatalities. Injuries have had less devastating effect but has not duplicated or triplicated as in the economy or mortality. Additional studies may be advisable to find the reason to the control in injuries in humans because of the weather events.
+4. Other additional findings were that the weather events have been increasing its damage to the economy and for the population in general. From the plots, we can see that from 1992 onwards, the effects have been disastrous. The losses in the economic have ascended from few millions to tens or hundreds of billions! On the population we can appreciate an increase in mortality from about a hundred in average until the end of the 80s to five hundred to fifteen hundred fatalities. 
+
+5. Injuries have had less devastating effect but has not duplicated or triplicated as in the economy or mortality. Additional studies may be advisable to find the reason to the control in injuries in humans because of the weather events. We can notice some cyclical shape on the injuries accross the years but the slope is mildly ascending.
+
+6. There are a couple of major weather events in 2005 and 2006 where we can see a drastic impact on the economy of 100 and 125 billion dollars. One was Katrina affecting several states in the Southm, and the other was a major flood in California.
 
 
 ## Figures
