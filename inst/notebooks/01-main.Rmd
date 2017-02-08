@@ -47,6 +47,8 @@ project.extdata
 project.R
 ```
 
+### Downloading the data
+We found a problem while trying to download the data file from the internet. The `bunzip2` format is not properly managed by the `download.file` function. So, we have to add a new function `bunzip2` from the package `R.utils` to download and unpack the compresed file. Of course, this could have been done by using the `read.csv` function to read the data file directly but that would be a "one-off" operation. To make the function `downloadZip` reusable for the future we used `bunzip2`. There is a flag in the function that allows the selection of that particular compression format.
 
 ```{r message=FALSE, warning=FALSE}
 downloadZip <- function(fileUrl, outDir="./data", bzip2 = FALSE) {
