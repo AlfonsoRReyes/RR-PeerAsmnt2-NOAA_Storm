@@ -371,17 +371,18 @@ We plot now the top 5 events that cause more harm on the population:
 ```r
 byEvent.005 <- byEvent.0[1:5, ]
 
-p1 <- ggplot(byEvent.005, aes(x = EVTYPE, y = fatal.sum)) +
+p1 <- ggplot(byEvent.005, aes(x = reorder(EVTYPE, -fatal.sum), y = fatal.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Fatalities") +
   geom_text(aes(label=fatal.sum, vjust = -0.25))
 
-p2 <- ggplot(byEvent.005, aes(EVTYPE, injur.sum)) +
+p2 <- ggplot(byEvent.005, aes(x = reorder(EVTYPE, -injur.sum), y = injur.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Injuries") +
   geom_text(aes(label=injur.sum, vjust = -0.25))
 
 gridExtra::grid.arrange(p1, p2)
+grid.rect(gp=gpar(fill=NA))
 ```
 
 ![](01-main_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
@@ -465,33 +466,65 @@ byDamage.mm
 Get the top 5 and top 10 causes of economic damage.
 
 ```r
-byDamage.mm.top5 <- byDamage.mm[1:5, ]
+byDamage.mm.top5 <- byDamage.mm[1:10, ]
 byDamage.mm.top5
 ```
 
 ```
-# A tibble: 5 × 5
-             EVTYPE propdmg.m cropdmg.m totaldmg.mm totaldmg.bi
-             <fctr>     <dbl>     <dbl>       <dbl>       <dbl>
-1             FLOOD 144657.71 5661.9685   150319.68   150.31968
-2 HURRICANE/TYPHOON  69305.84 2607.8728    71913.71    71.91371
-3           TORNADO  56937.16  414.9531    57352.11    57.35211
-4       STORM SURGE  43323.54    0.0050    43323.54    43.32354
-5              HAIL  15732.27 3025.9545    18758.22    18.75822
+# A tibble: 10 × 5
+              EVTYPE  propdmg.m  cropdmg.m totaldmg.mm totaldmg.bi
+              <fctr>      <dbl>      <dbl>       <dbl>       <dbl>
+1              FLOOD 144657.710  5661.9685  150319.678  150.319678
+2  HURRICANE/TYPHOON  69305.840  2607.8728   71913.713   71.913713
+3            TORNADO  56937.160   414.9531   57352.114   57.352114
+4        STORM SURGE  43323.536     0.0050   43323.541   43.323541
+5               HAIL  15732.267  3025.9545   18758.221   18.758221
+6        FLASH FLOOD  16140.812  1421.3171   17562.129   17.562129
+7            DROUGHT   1046.106 13972.5660   15018.672   15.018672
+8          HURRICANE  11868.319  2741.9100   14610.229   14.610229
+9        RIVER FLOOD   5118.945  5029.4590   10148.405   10.148404
+10         ICE STORM   3944.928  5022.1135    8967.041    8.967041
 ```
 
 
 ```r
-ggplot(byDamage.mm.top5, aes(EVTYPE, totaldmg.bi)) +
+ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
-  ggtitle("Impact on Economy") +
-  geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25))
+  ggtitle("Total impact on Economy") +
+  geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25)) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
 ![](01-main_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
 
 
+```r
+propdmg.bi <- byDamage.mm.top5$propdmg.m/1000
+
+ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg.bi)) +
+  geom_bar(stat = "identity") +
+  labs(y = "Billions US$", x = "Weather event") +
+  ggtitle("Economic impact on Property") +
+  geom_text(aes(label=round(propdmg.bi, 0), vjust = -0.25)) + 
+theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+![](01-main_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+
+
+```r
+cropdmg.bi <- byDamage.mm.top5$cropdmg.m/1000
+
+ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg.bi)) +
+  geom_bar(stat = "identity") +
+  labs(y = "Billions US$", x = "Weather event") +
+  ggtitle("Economic impact on Crops") +
+  geom_text(aes(label=round(cropdmg.bi, 1), vjust = -0.25)) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+![](01-main_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
 
 ### Multiple identifiers for monetary units
 There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
@@ -671,7 +704,7 @@ gridExtra::grid.arrange(q1, arrangeGrob(q2, q3), ncol=2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-31-1.png)<!-- -->
 
 
 

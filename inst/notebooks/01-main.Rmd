@@ -175,7 +175,8 @@ save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/
 ```
 
 
-### Event Types `EVTYPE`
+### The recorded weather events
+Event Types `EVTYPE`
 
 ```{r}
 # want to know how many levels this factor has
@@ -281,7 +282,8 @@ ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Total impact on Economy") +
-  geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25))
+  geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25)) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
 ```{r}
@@ -291,8 +293,9 @@ propdmg.bi <- byDamage.mm.top5$propdmg.m/1000
 ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
-  ggtitle("Total impact on Property") +
-  geom_text(aes(label=round(propdmg.bi, 0), vjust = -0.25))
+  ggtitle("Economic impact on Property") +
+  geom_text(aes(label=round(propdmg.bi, 0), vjust = -0.25)) + 
+theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
 ```{r}
@@ -302,8 +305,9 @@ cropdmg.bi <- byDamage.mm.top5$cropdmg.m/1000
 ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
-  ggtitle("Total impact on Crops") +
-  geom_text(aes(label=round(cropdmg.bi, 1), vjust = -0.25))
+  ggtitle("Economic impact on Crops") +
+  geom_text(aes(label=round(cropdmg.bi, 1), vjust = -0.25)) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
 ### Multiple identifiers for monetary units
