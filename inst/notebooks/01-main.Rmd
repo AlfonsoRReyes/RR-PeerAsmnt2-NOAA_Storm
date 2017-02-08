@@ -1,8 +1,9 @@
 ---
 title: "main"
 output:
-  html_document: default
   html_notebook: default
+  html_document:
+    keep_md: yes
 ---
 
 ```{r setup, include=FALSE, error=TRUE, message=FALSE}
@@ -81,17 +82,73 @@ downloadZip(fileUrl, outDir = outDir, bzip2 = TRUE)   # download and unpack file
 # read the CSV file to memory
 dataFile <- paste(project.extdata, "dataset.csv", sep = "/")
 stormdata.raw <- read.csv(dataFile)
-stormdata <- stormdata.raw          # for the moment we will use a shorter name
+# stormdata <- stormdata.raw          # for the moment we will use a shorter name
 ```
 
 
 ```{r results='hold'}
 # properties of the dataset
-dim(stormdata.raw)
+dims <- dim(stormdata.raw)
+dims
+# There are `r dims[1]` observations and `r dims[2]` variables.
+```
+
+
+
+The names of the variables are:
+```{r}
 names(stormdata.raw)
+```
+
+
+```{r}
 #str(stormdata.raw)
 summary(stormdata.raw)
-head(stormdata.raw)
+```
+
+### What variables do we keep for our analysis?
+
+These are the variable that we consider important for the analysis:
+
+        REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
+        FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS
+
+
+```{r}
+stormdata <- stormdata.raw %>%
+  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
+
+rm(stormdata.raw)
+```
+
+If we save this data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the remarks, the new dataset shrinks to only 4.6 megabytes.
+
+
+
+```{r}
+# REFNUM is the record id of the observation and is unique.
+length(unique(stormdata$REFNUM))
+range(unique(stormdata$REFNUM))
+```
+
+```{r}
+head(stormdata)
+```
+
+### Clean up the dataset
+
+```{r}
+stormdata.small <- stormdata %>%
+    select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
+  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%
+  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
+
+stormdata.small
+```
+
+```{r}
+# save unique events by year
+save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
 ```
 
 ### Event Types `EVTYPE`
@@ -99,9 +156,10 @@ head(stormdata.raw)
 ```{r}
 # want to know how levels this factor has
 head(unique(stormdata.raw$EVTYPE), 10)
+# There are `r length(unique(stormdata$EVTYPE))` different type of events.
 ```
 
-There are `r length(unique(stormdata.raw$EVTYPE))` different type of events.
+
 
 We want to find now which type of events is more harmful to population health. We could group by `EVTYPE` and showing the variables FATALITIES and INJURIES.
 
@@ -199,27 +257,6 @@ ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### Multiple identifiers for monetary units
 There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
 There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. Besides the identifiers `B`, `M` and `K`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts. In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data.
@@ -249,9 +286,11 @@ unknown <- stormdata %>%
   filter(!toupper(PROPDMGEXP) %in% c("K", "M", "B") | !toupper(CROPDMGEXP) %in% c("K", "M", "B"))
 
 dim(unknown)[1]
+
+# There are `r dim(unknown)[1]` observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
 ```
 
-There are `r dim(unknown)[1]` observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
+
 
 ### Saving some data
 We save few datasets that are much smaller in size than the original dataset.
