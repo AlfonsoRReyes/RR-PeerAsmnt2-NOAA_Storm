@@ -24,7 +24,7 @@ library(R.utils)
 library(lubridate)
 ```
 
-### Set up project folders with `rprojroot`
+### Set up project folders with `rprojroot` package
 
 ```r
 # package rprojroot required
@@ -49,6 +49,7 @@ Setting up the project folders:
 [1] "/home/superuser/git.projects/RR-PeerAsmnt2-NOAA_Storm/inst/extdata"
 [1] "/home/superuser/git.projects/RR-PeerAsmnt2-NOAA_Storm/R"
 ```
+
 
 ### Downloading the data
 We found a problem while trying to download the data file from the internet. The `bunzip2` format is not properly managed by the `download.file` function. So, we have to add a new function `bunzip2` from the package `R.utils` to download and unpack the compresed file. Of course, this could have been done by using the `read.csv` function to read the data file directly but that would be a "one-off" operation. To make the function `downloadZip` reusable for the future we used `bunzip2`. There is a flag in the function that allows the selection of that particular compression format.
@@ -92,46 +93,17 @@ downloadZip(fileUrl, outDir = outDir, bzip2 = TRUE)   # download and unpack file
 # read the CSV file to memory
 dataFile <- paste(project.extdata, "dataset.csv", sep = "/")
 stormdata.raw <- read.csv(dataFile)
-```
-
-```
-Warning in file(file, "rt"): cannot open file '/home/superuser/
-git.projects/RR-PeerAsmnt2-NOAA_Storm/inst/extdata/dataset.csv': No such
-file or directory
-```
-
-```
-Error in file(file, "rt"): cannot open the connection
-```
-
-```r
 # stormdata <- stormdata.raw          # for the moment we will use a shorter name
 ```
 
-
+### How our raw data look?
 
 ```r
 # properties of the dataset
 dims <- dim(stormdata.raw)
 ```
 
-```
-Error in eval(expr, envir, enclos): object 'stormdata.raw' not found
-```
-
-```r
-dims
-```
-
-```
-Error in eval(expr, envir, enclos): object 'dims' not found
-```
-
-```r
-# There are `r dims[1]` observations and `r dims[2]` variables.
-```
-
-
+There are 902297 observations and 37 variables.
 
 The names of the variables are:
 
@@ -140,19 +112,16 @@ names(stormdata.raw)
 ```
 
 ```
-Error in eval(expr, envir, enclos): object 'stormdata.raw' not found
+ [1] "STATE__"    "BGN_DATE"   "BGN_TIME"   "TIME_ZONE"  "COUNTY"    
+ [6] "COUNTYNAME" "STATE"      "EVTYPE"     "BGN_RANGE"  "BGN_AZI"   
+[11] "BGN_LOCATI" "END_DATE"   "END_TIME"   "COUNTY_END" "COUNTYENDN"
+[16] "END_RANGE"  "END_AZI"    "END_LOCATI" "LENGTH"     "WIDTH"     
+[21] "F"          "MAG"        "FATALITIES" "INJURIES"   "PROPDMG"   
+[26] "PROPDMGEXP" "CROPDMG"    "CROPDMGEXP" "WFO"        "STATEOFFIC"
+[31] "ZONENAMES"  "LATITUDE"   "LONGITUDE"  "LATITUDE_E" "LONGITUDE_"
+[36] "REMARKS"    "REFNUM"    
 ```
 
-
-
-```r
-#str(stormdata.raw)
-summary(stormdata.raw)
-```
-
-```
-Error in summary(stormdata.raw): object 'stormdata.raw' not found
-```
 
 ### What variables do we keep for our analysis?
 
@@ -166,64 +135,88 @@ These are the variable that we consider important for the analysis:
 ```r
 stormdata <- stormdata.raw %>%
   select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
+
+rm(stormdata.raw)     # release big dataset
 ```
 
-```
-Error in eval(expr, envir, enclos): object 'stormdata.raw' not found
-```
-
-If we save this data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the remarks, the new dataset shrinks to only 4.6 megabytes.
+To save memory we release now the 'stormdata.raw`  object.
 
 
+We have an observation ID with the variable `REFNUM`. We check if all its values are unique:
 
 
 ```r
 # REFNUM is the record id of the observation and is unique.
 length(unique(stormdata$REFNUM))
-```
-
-```
-Error in unique(stormdata$REFNUM): object 'stormdata' not found
-```
-
-```r
 range(unique(stormdata$REFNUM))
 ```
 
 ```
-Error in unique(stormdata$REFNUM): object 'stormdata' not found
+[1] 902297
+[1]      1 902297
 ```
 
+This is a view of the data frame that we will use in our analysis.
 
 ```r
-head(stormdata)
+as_data_frame(stormdata)
 ```
 
 ```
-Error in head(stormdata): object 'stormdata' not found
+# A tibble: 902,297 × 13
+   REFNUM           BGN_DATE  STATE COUNTY COUNTYNAME  EVTYPE FATALITIES
+    <dbl>             <fctr> <fctr>  <dbl>     <fctr>  <fctr>      <dbl>
+1       1  4/18/1950 0:00:00     AL     97     MOBILE TORNADO          0
+2       2  4/18/1950 0:00:00     AL      3    BALDWIN TORNADO          0
+3       3  2/20/1951 0:00:00     AL     57    FAYETTE TORNADO          0
+4       4   6/8/1951 0:00:00     AL     89    MADISON TORNADO          0
+5       5 11/15/1951 0:00:00     AL     43    CULLMAN TORNADO          0
+6       6 11/15/1951 0:00:00     AL     77 LAUDERDALE TORNADO          0
+7       7 11/16/1951 0:00:00     AL      9     BLOUNT TORNADO          0
+8       8  1/22/1952 0:00:00     AL    123 TALLAPOOSA TORNADO          0
+9       9  2/13/1952 0:00:00     AL    125 TUSCALOOSA TORNADO          1
+10     10  2/13/1952 0:00:00     AL     57    FAYETTE TORNADO          0
+# ... with 902,287 more rows, and 6 more variables: INJURIES <dbl>,
+#   PROPDMG <dbl>, PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>,
+#   REMARKS <fctr>
 ```
 
 ### Clean up the dataset
+We will transform the variable `BGN_DATE` from a factor to a date variable. We will later use it for our summaries. We will also take out some variables that are not relevant to our study.
 
 
 ```r
-stormdata.small <- stormdata %>%
-    select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
-  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%
-  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
+stormdata.small <- stormdata %>% 
+  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, # take out
+           FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
+  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%    # convert to date
+  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE,     # reorder
+         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
+
+as_data_frame(stormdata.small)
 ```
 
 ```
-Error in eval(expr, envir, enclos): object 'stormdata' not found
+# A tibble: 902,297 × 12
+   REFNUM       DATE  STATE COUNTY COUNTYNAME  EVTYPE FATALITIES INJURIES
+    <dbl>     <dttm> <fctr>  <dbl>     <fctr>  <fctr>      <dbl>    <dbl>
+1       1 1950-04-18     AL     97     MOBILE TORNADO          0       15
+2       2 1950-04-18     AL      3    BALDWIN TORNADO          0        0
+3       3 1951-02-20     AL     57    FAYETTE TORNADO          0        2
+4       4 1951-06-08     AL     89    MADISON TORNADO          0        2
+5       5 1951-11-15     AL     43    CULLMAN TORNADO          0        2
+6       6 1951-11-15     AL     77 LAUDERDALE TORNADO          0        6
+7       7 1951-11-16     AL      9     BLOUNT TORNADO          0        1
+8       8 1952-01-22     AL    123 TALLAPOOSA TORNADO          0        0
+9       9 1952-02-13     AL    125 TUSCALOOSA TORNADO          1       14
+10     10 1952-02-13     AL     57    FAYETTE TORNADO          0        0
+# ... with 902,287 more rows, and 4 more variables: PROPDMG <dbl>,
+#   PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>
 ```
 
-```r
-stormdata.small
-```
 
-```
-Error in eval(expr, envir, enclos): object 'stormdata.small' not found
-```
+### Saving a portion of the dataset
+If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file.
 
 
 ```r
@@ -231,117 +224,126 @@ Error in eval(expr, envir, enclos): object 'stormdata.small' not found
 save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
 ```
 
-```
-Error in save(stormdata.small, file = paste(project.data, "stormdata.small.rda", : object 'stormdata.small' not found
-```
 
 ### Event Types `EVTYPE`
 
 
 ```r
-# want to know how levels this factor has
-head(unique(stormdata.raw$EVTYPE), 10)
+# want to know how many levels this factor has
+as_data_frame(unique(stormdata$EVTYPE), 10)
 ```
 
 ```
-Error in unique(stormdata.raw$EVTYPE): object 'stormdata.raw' not found
+Warning in as.data.frame.factor(value, stringsAsFactors = FALSE, ...):
+'row.names' is not a character vector of length 985 -- omitting it. Will be
+an error!
 ```
 
-```r
-# There are `r length(unique(stormdata$EVTYPE))` different type of events.
+```
+# A tibble: 985 × 1
+                       value
+                      <fctr>
+1                    TORNADO
+2                  TSTM WIND
+3                       HAIL
+4              FREEZING RAIN
+5                       SNOW
+6      ICE STORM/FLASH FLOOD
+7                   SNOW/ICE
+8               WINTER STORM
+9  HURRICANE OPAL/HIGH WINDS
+10        THUNDERSTORM WINDS
+# ... with 975 more rows
 ```
 
+There are 985 different type of events.
 
-
+### Create data frame for 1st question
 We want to find now which type of events is more harmful to population health. We could group by `EVTYPE` and showing the variables FATALITIES and INJURIES.
 
 
-
 ```r
+# byEvent.0: dataset where main sort criteria is FATALITIES
 byEvent.0 <- stormdata %>%
   select(EVTYPE, FATALITIES, INJURIES) %>%
   group_by(EVTYPE) %>%
   summarize(fatal.sum = sum(FATALITIES), injur.sum = sum(INJURIES)) %>%
   arrange(desc(fatal.sum), desc(injur.sum))
-```
 
-```
-Error in eval(expr, envir, enclos): object 'stormdata' not found
-```
-
-```r
 byEvent.0
 ```
 
 ```
-Error in eval(expr, envir, enclos): object 'byEvent.0' not found
+# A tibble: 985 × 3
+           EVTYPE fatal.sum injur.sum
+           <fctr>     <dbl>     <dbl>
+1         TORNADO      5633     91346
+2  EXCESSIVE HEAT      1903      6525
+3     FLASH FLOOD       978      1777
+4            HEAT       937      2100
+5       LIGHTNING       816      5230
+6       TSTM WIND       504      6957
+7           FLOOD       470      6789
+8     RIP CURRENT       368       232
+9       HIGH WIND       248      1137
+10      AVALANCHE       224       170
+# ... with 975 more rows
 ```
 
 
 ```r
+# byEvent.1: dataset where the main sort criteria is INJURIES
 byEvent.1 <- stormdata %>%
   select(EVTYPE, FATALITIES, INJURIES) %>%
   group_by(EVTYPE) %>%
   summarize(injur.sum = sum(INJURIES), fatal.sum = sum(FATALITIES)) %>%
   arrange(desc(injur.sum), desc(fatal.sum))
-```
 
-```
-Error in eval(expr, envir, enclos): object 'stormdata' not found
-```
-
-```r
 byEvent.1
 ```
 
 ```
-Error in eval(expr, envir, enclos): object 'byEvent.1' not found
+# A tibble: 985 × 3
+              EVTYPE injur.sum fatal.sum
+              <fctr>     <dbl>     <dbl>
+1            TORNADO     91346      5633
+2          TSTM WIND      6957       504
+3              FLOOD      6789       470
+4     EXCESSIVE HEAT      6525      1903
+5          LIGHTNING      5230       816
+6               HEAT      2100       937
+7          ICE STORM      1975        89
+8        FLASH FLOOD      1777       978
+9  THUNDERSTORM WIND      1488       133
+10              HAIL      1361        15
+# ... with 975 more rows
 ```
 
+     
 We plot now the top 5 events that cause more harm on the population:
 
 
 ```r
 byEvent.005 <- byEvent.0[1:5, ]
-```
 
-```
-Error in eval(expr, envir, enclos): object 'byEvent.0' not found
-```
-
-```r
 p1 <- ggplot(byEvent.005, aes(x = EVTYPE, y = fatal.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Fatalities") +
   geom_text(aes(label=fatal.sum, vjust = -0.25))
-```
 
-```
-Error in ggplot(byEvent.005, aes(x = EVTYPE, y = fatal.sum)): object 'byEvent.005' not found
-```
-
-```r
 p2 <- ggplot(byEvent.005, aes(EVTYPE, injur.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Injuries") +
   geom_text(aes(label=injur.sum, vjust = -0.25))
-```
 
-```
-Error in ggplot(byEvent.005, aes(EVTYPE, injur.sum)): object 'byEvent.005' not found
-```
-
-```r
 gridExtra::grid.arrange(p1, p2)
 ```
 
-```
-Error in arrangeGrob(...): object 'p1' not found
-```
+![](01-main_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
 
-## Economic Damage
+## Assessing the Economic Damage
 The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`.
 
 We will start by converting the monetary damages to a consistent units. We will choose thousands.
@@ -359,21 +361,29 @@ byDamage <- stormdata %>%
   mutate(CROPDMG.K = ifelse(CROPDMGEXP == "K", CROPDMG * 1,
                                     ifelse(CROPDMGEXP == "M", CROPDMG * 1000,
                                            ifelse(CROPDMGEXP == "B", CROPDMG * 1E6, 0))))
-```
-
-```
-Error in eval(expr, envir, enclos): object 'stormdata' not found
-```
-
-```r
 byDamage
 ```
 
 ```
-Error in eval(expr, envir, enclos): object 'byDamage' not found
+Source: local data frame [902,297 x 7]
+Groups: EVTYPE [985]
+
+    EVTYPE PROPDMG PROPDMGEXP CROPDMG CROPDMGEXP PROPDMG.K CROPDMG.K
+    <fctr>   <dbl>     <fctr>   <dbl>     <fctr>     <dbl>     <dbl>
+1  TORNADO    25.0          K       0                 25.0         0
+2  TORNADO     2.5          K       0                  2.5         0
+3  TORNADO    25.0          K       0                 25.0         0
+4  TORNADO     2.5          K       0                  2.5         0
+5  TORNADO     2.5          K       0                  2.5         0
+6  TORNADO     2.5          K       0                  2.5         0
+7  TORNADO     2.5          K       0                  2.5         0
+8  TORNADO     2.5          K       0                  2.5         0
+9  TORNADO    25.0          K       0                 25.0         0
+10 TORNADO    25.0          K       0                 25.0         0
+# ... with 902,287 more rows
 ```
 
-We converts the thousands to millions of US$ and only one variable, the total economic damage.
+We convert the thousands to millions of US$ and only one variable, the total economic damage.
 
 
 ```r
@@ -385,52 +395,64 @@ byDamage.m <- byDamage %>%
   mutate(totaldmg.m = propdmg.m + cropdmg.m) %>%
   # arrange(desc(propdmg.m), desc(cropdmg.m))
   arrange(desc(totaldmg.m))
-```
 
-```
-Error in eval(expr, envir, enclos): object 'byDamage' not found
-```
-
-```r
 byDamage.m
 ```
 
 ```
-Error in eval(expr, envir, enclos): object 'byDamage.m' not found
+# A tibble: 985 × 4
+              EVTYPE  propdmg.m  cropdmg.m totaldmg.m
+              <fctr>      <dbl>      <dbl>      <dbl>
+1              FLOOD 144657.710  5661.9685 150319.678
+2  HURRICANE/TYPHOON  69305.840  2607.8728  71913.713
+3            TORNADO  56937.160   414.9531  57352.114
+4        STORM SURGE  43323.536     0.0050  43323.541
+5               HAIL  15732.267  3025.9545  18758.221
+6        FLASH FLOOD  16140.812  1421.3171  17562.129
+7            DROUGHT   1046.106 13972.5660  15018.672
+8          HURRICANE  11868.319  2741.9100  14610.229
+9        RIVER FLOOD   5118.945  5029.4590  10148.405
+10         ICE STORM   3944.928  5022.1135   8967.041
+# ... with 975 more rows
 ```
 
 Get the top 5 and top 10 causes of economic damage.
 
 ```r
 byDamage.m.top5 <- byDamage.m[1:5, ]
-```
-
-```
-Error in eval(expr, envir, enclos): object 'byDamage.m' not found
-```
-
-```r
 byDamage.m.top5
 ```
 
 ```
-Error in eval(expr, envir, enclos): object 'byDamage.m.top5' not found
+# A tibble: 5 × 4
+             EVTYPE propdmg.m cropdmg.m totaldmg.m
+             <fctr>     <dbl>     <dbl>      <dbl>
+1             FLOOD 144657.71 5661.9685  150319.68
+2 HURRICANE/TYPHOON  69305.84 2607.8728   71913.71
+3           TORNADO  56937.16  414.9531   57352.11
+4       STORM SURGE  43323.54    0.0050   43323.54
+5              HAIL  15732.27 3025.9545   18758.22
 ```
 
 ```r
 byDamage.m.top10 <- byDamage.m[1:10, ]
-```
-
-```
-Error in eval(expr, envir, enclos): object 'byDamage.m' not found
-```
-
-```r
 byDamage.m.top10
 ```
 
 ```
-Error in eval(expr, envir, enclos): object 'byDamage.m.top10' not found
+# A tibble: 10 × 4
+              EVTYPE  propdmg.m  cropdmg.m totaldmg.m
+              <fctr>      <dbl>      <dbl>      <dbl>
+1              FLOOD 144657.710  5661.9685 150319.678
+2  HURRICANE/TYPHOON  69305.840  2607.8728  71913.713
+3            TORNADO  56937.160   414.9531  57352.114
+4        STORM SURGE  43323.536     0.0050  43323.541
+5               HAIL  15732.267  3025.9545  18758.221
+6        FLASH FLOOD  16140.812  1421.3171  17562.129
+7            DROUGHT   1046.106 13972.5660  15018.672
+8          HURRICANE  11868.319  2741.9100  14610.229
+9        RIVER FLOOD   5118.945  5029.4590  10148.405
+10         ICE STORM   3944.928  5022.1135   8967.041
 ```
 
 
@@ -439,9 +461,7 @@ ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
   geom_bar(stat = "identity")
 ```
 
-```
-Error in ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)): object 'byDamage.m.top5' not found
-```
+![](01-main_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
 
 
 
@@ -458,7 +478,8 @@ unique(byDamage$PROPDMGEXP)
 ```
 
 ```
-Error in unique(byDamage$PROPDMGEXP): object 'byDamage' not found
+ [1] K M   B + 0 5 6 ? 4 2 3 H 7 - 1 8
+Levels: K  M + ? 0 4 5 7 B 1 2 8 H - 3 6
 ```
 
 
@@ -467,7 +488,8 @@ unique(byDamage$CROPDMGEXP)
 ```
 
 ```
-Error in unique(byDamage$CROPDMGEXP): object 'byDamage' not found
+[1]   M K B ? 0 2
+Levels:  M K 0 B ? 2
 ```
 
 
@@ -476,7 +498,22 @@ summary(byDamage)
 ```
 
 ```
-Error in summary(byDamage): object 'byDamage' not found
+               EVTYPE          PROPDMG          PROPDMGEXP    
+ HAIL             :288661   Min.   :   0.00          :465934  
+ TSTM WIND        :219940   1st Qu.:   0.00   K      :424665  
+ THUNDERSTORM WIND: 82563   Median :   0.00   M      : 11337  
+ TORNADO          : 60652   Mean   :  12.06   0      :   216  
+ FLASH FLOOD      : 54277   3rd Qu.:   0.50   B      :    40  
+ FLOOD            : 25326   Max.   :5000.00   5      :    28  
+ (Other)          :170878                     (Other):    77  
+    CROPDMG        CROPDMGEXP   PROPDMG.K          CROPDMG.K      
+ Min.   :  0.000    :618413   Min.   :0.00e+00   Min.   :      0  
+ 1st Qu.:  0.000   M:  1995   1st Qu.:0.00e+00   1st Qu.:      0  
+ Median :  0.000   K:281853   Median :0.00e+00   Median :      0  
+ Mean   :  1.527   0:    19   Mean   :4.74e+02   Mean   :     54  
+ 3rd Qu.:  0.000   B:     9   3rd Qu.:0.00e+00   3rd Qu.:      0  
+ Max.   :990.000   ?:     7   Max.   :1.15e+08   Max.   :5000000  
+                   2:     1                                       
 ```
 
 
@@ -489,22 +526,7 @@ unknown <- stormdata %>%
   filter(!toupper(PROPDMGEXP) %in% c("K", "M", "B") | !toupper(CROPDMGEXP) %in% c("K", "M", "B"))
 ```
 
-```
-Error in eval(expr, envir, enclos): object 'stormdata' not found
-```
-
-```r
-dim(unknown)[1]
-```
-
-```
-Error in eval(expr, envir, enclos): object 'unknown' not found
-```
-
-```r
-# There are `r dim(unknown)[1]` observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
-```
-
+There are 622760 observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
 
 
 ### Saving some data
@@ -532,18 +554,27 @@ byYearEvent <- stormdata %>%
             propdmg.M  = sum(PROPDMG.K) / 1000,
             cropdmg.M  = sum(CROPDMG.K) /1000
             )
-```
 
-```
-Error in eval(expr, envir, enclos): object 'stormdata' not found
-```
-
-```r
 byYearEvent
 ```
 
 ```
-Error in eval(expr, envir, enclos): object 'byYearEvent' not found
+Source: local data frame [83,144 x 6]
+Groups: BGN_DATE [?]
+
+             BGN_DATE    EVTYPE fatalities injuries propdmg.M cropdmg.M
+               <fctr>    <fctr>      <dbl>    <dbl>     <dbl>     <dbl>
+1  10/10/1954 0:00:00   TORNADO          0        0    0.0250         0
+2  10/10/1958 0:00:00   TORNADO          2        7    0.2500         0
+3  10/10/1958 0:00:00 TSTM WIND          0        0    0.0000         0
+4  10/10/1959 0:00:00      HAIL          0        0    0.0000         0
+5  10/10/1959 0:00:00   TORNADO          0        0    0.2750         0
+6  10/10/1959 0:00:00 TSTM WIND          0        0    0.0000         0
+7  10/10/1960 0:00:00      HAIL          0        0    0.0000         0
+8  10/10/1961 0:00:00   TORNADO          0        0    0.0025         0
+9  10/10/1962 0:00:00      HAIL          0        0    0.0000         0
+10 10/10/1962 0:00:00   TORNADO          0        0    0.0250         0
+# ... with 83,134 more rows
 ```
 
 
@@ -551,10 +582,6 @@ Error in eval(expr, envir, enclos): object 'byYearEvent' not found
 ```r
 # save unique events by year
 save(byYearEvent, file = paste(project.data, "byYearEvent.rda", sep = "/"))
-```
-
-```
-Error in save(byYearEvent, file = paste(project.data, "byYearEvent.rda", : object 'byYearEvent' not found
 ```
 
 ### Have the number of fatalities and injuries increased over the years?
@@ -597,7 +624,7 @@ ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-28-1.png)<!-- -->
 
 
 ```r
@@ -605,7 +632,7 @@ ggplot(byYearSummary, aes(x = year, y = fatalities)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-30-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
 
 
 ```r
@@ -613,7 +640,7 @@ ggplot(byYearSummary, aes(x = year, y = injuries)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-31-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-30-1.png)<!-- -->
 
 
 

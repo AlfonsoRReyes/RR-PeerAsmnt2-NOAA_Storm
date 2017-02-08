@@ -1,9 +1,9 @@
 ---
 title: "main"
 output:
-  html_notebook: default
   html_document:
     keep_md: yes
+  html_notebook: default
 ---
 
 ```{r setup, include=FALSE, error=TRUE, message=FALSE}
@@ -32,7 +32,7 @@ library(lubridate)
 
 ```
 
-### Set up project folders with `rprojroot`
+### Set up project folders with `rprojroot` package
 ```{r results='hold'}
 # package rprojroot required
 root <- rprojroot::is_rstudio_project
@@ -48,6 +48,7 @@ project.data
 project.extdata
 project.R
 ```
+
 
 ### Downloading the data
 We found a problem while trying to download the data file from the internet. The `bunzip2` format is not properly managed by the `download.file` function. So, we have to add a new function `bunzip2` from the package `R.utils` to download and unpack the compresed file. Of course, this could have been done by using the `read.csv` function to read the data file directly but that would be a "one-off" operation. To make the function `downloadZip` reusable for the future we used `bunzip2`. There is a flag in the function that allows the selection of that particular compression format.
@@ -85,26 +86,19 @@ stormdata.raw <- read.csv(dataFile)
 # stormdata <- stormdata.raw          # for the moment we will use a shorter name
 ```
 
-
+### How our raw data look?
 ```{r results='hold'}
 # properties of the dataset
 dims <- dim(stormdata.raw)
-dims
-# There are `r dims[1]` observations and `r dims[2]` variables.
 ```
 
-
+There are `r dims[1]` observations and `r dims[2]` variables.
 
 The names of the variables are:
 ```{r}
 names(stormdata.raw)
 ```
 
-
-```{r}
-#str(stormdata.raw)
-summary(stormdata.raw)
-```
 
 ### What variables do we keep for our analysis?
 
@@ -118,53 +112,64 @@ These are the variable that we consider important for the analysis:
 stormdata <- stormdata.raw %>%
   select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
 
-rm(stormdata.raw)
+rm(stormdata.raw)     # release big dataset
 ```
 
-If we save this data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the remarks, the new dataset shrinks to only 4.6 megabytes.
+To save memory we release now the 'stormdata.raw`  object.
 
 
+We have an observation ID with the variable `REFNUM`. We check if all its values are unique:
 
-```{r}
+```{r results='hold'}
 # REFNUM is the record id of the observation and is unique.
 length(unique(stormdata$REFNUM))
 range(unique(stormdata$REFNUM))
 ```
 
+This is a view of the data frame that we will use in our analysis.
 ```{r}
-head(stormdata)
+as_data_frame(stormdata)
 ```
 
 ### Clean up the dataset
+We will transform the variable `BGN_DATE` from a factor to a date variable. We will later use it for our summaries. We will also take out some variables that are not relevant to our study.
 
 ```{r}
-stormdata.small <- stormdata %>%
-    select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
-  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%
-  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
+stormdata.small <- stormdata %>% 
+  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, # take out
+           FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
+  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%    # convert to date
+  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE,     # reorder
+         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
 
-stormdata.small
+as_data_frame(stormdata.small)
 ```
+
+
+### Saving a portion of the dataset
+If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file.
 
 ```{r}
 # save unique events by year
 save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
 ```
 
+
 ### Event Types `EVTYPE`
 
 ```{r}
-# want to know how levels this factor has
-head(unique(stormdata.raw$EVTYPE), 10)
-# There are `r length(unique(stormdata$EVTYPE))` different type of events.
+# want to know how many levels this factor has
+as_data_frame(unique(stormdata$EVTYPE), 10)
+
 ```
 
+There are `r length(unique(stormdata$EVTYPE))` different type of events.
 
-
+### Create data frames for 1st question
 We want to find now which type of events is more harmful to population health. We could group by `EVTYPE` and showing the variables FATALITIES and INJURIES.
 
-
 ```{r}
+# byEvent.0: dataset where main sort criteria is FATALITIES
 byEvent.0 <- stormdata %>%
   select(EVTYPE, FATALITIES, INJURIES) %>%
   group_by(EVTYPE) %>%
@@ -175,6 +180,7 @@ byEvent.0
 ```
 
 ```{r}
+# byEvent.1: dataset where the main sort criteria is INJURIES
 byEvent.1 <- stormdata %>%
   select(EVTYPE, FATALITIES, INJURIES) %>%
   group_by(EVTYPE) %>%
@@ -184,6 +190,7 @@ byEvent.1 <- stormdata %>%
 byEvent.1
 ```
 
+     
 We plot now the top 5 events that cause more harm on the population:
 
 ```{r fig.asp=1}
@@ -205,7 +212,7 @@ gridExtra::grid.arrange(p1, p2)
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
 
-## Economic Damage
+## Assessing the Economic Damage
 The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`.
 
 We will start by converting the monetary damages to a consistent units. We will choose thousands.
@@ -225,7 +232,7 @@ byDamage <- stormdata %>%
 byDamage
 ```
 
-We converts the thousands to millions of US$ and only one variable, the total economic damage.
+We convert the thousands to millions of US$ and only one variable, the total economic damage.
 
 ```{r}
 
@@ -245,9 +252,6 @@ Get the top 5 and top 10 causes of economic damage.
 ```{r}
 byDamage.m.top5 <- byDamage.m[1:5, ]
 byDamage.m.top5
-
-byDamage.m.top10 <- byDamage.m[1:10, ]
-byDamage.m.top10
 ```
 
 ```{r}
@@ -285,14 +289,12 @@ unknown <- stormdata %>%
   select(STATE, EVTYPE, PROPDMGEXP, CROPDMGEXP, REMARKS) %>%
   filter(!toupper(PROPDMGEXP) %in% c("K", "M", "B") | !toupper(CROPDMGEXP) %in% c("K", "M", "B"))
 
-dim(unknown)[1]
-
-# There are `r dim(unknown)[1]` observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
 ```
 
+There are `r dim(unknown)[1]` observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
 
 
-### Saving some data
+### Preparing the data for other questions
 We save few datasets that are much smaller in size than the original dataset.
 
 1. byYearEvent: is a dataset that contains a summary of the events, fatalities, injuries, economic losses in property and crops in millions of US$. TO-DO: convert dates to year.
