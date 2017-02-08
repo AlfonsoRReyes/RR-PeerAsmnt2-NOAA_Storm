@@ -313,6 +313,11 @@ ggplot(byYearSummary, aes(x = year, y = injuries)) +
 ```
 
 
+```{r}
+# save losses by year
+save(byYearSummary, file = paste(project.data, "byYearSummary.rda", sep = "/"))
+```
+
 ## Results
 
 ## Figures
