@@ -24,7 +24,7 @@ library(R.utils)
 library(lubridate)
 ```
 
-### Set up project folders with `rprojroot`
+### Set up project folders with `rprojroot` package
 
 ```r
 # package rprojroot required
@@ -49,6 +49,7 @@ Setting up the project folders:
 [1] "/home/superuser/git.projects/RR-PeerAsmnt2-NOAA_Storm/inst/extdata"
 [1] "/home/superuser/git.projects/RR-PeerAsmnt2-NOAA_Storm/R"
 ```
+
 
 ### Downloading the data
 We found a problem while trying to download the data file from the internet. The `bunzip2` format is not properly managed by the `download.file` function. So, we have to add a new function `bunzip2` from the package `R.utils` to download and unpack the compresed file. Of course, this could have been done by using the `read.csv` function to read the data file directly but that would be a "one-off" operation. To make the function `downloadZip` reusable for the future we used `bunzip2`. There is a flag in the function that allows the selection of that particular compression format.
@@ -95,7 +96,7 @@ stormdata.raw <- read.csv(dataFile)
 # stormdata <- stormdata.raw          # for the moment we will use a shorter name
 ```
 
-
+### How our raw data look?
 
 ```r
 # properties of the dataset
@@ -122,12 +123,6 @@ names(stormdata.raw)
 ```
 
 
-
-```r
-# str(stormdata.raw)
-# summary(stormdata.raw)
-```
-
 ### What variables do we keep for our analysis?
 
 These are the variable that we consider important for the analysis:
@@ -144,7 +139,7 @@ stormdata <- stormdata.raw %>%
 rm(stormdata.raw)     # release big dataset
 ```
 
-If we save this data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the remarks, the new dataset shrinks to only 4.6 megabytes.
+To save memory we release now the 'stormdata.raw`  object.
 
 
 We have an observation ID with the variable `REFNUM`. We check if all its values are unique:
@@ -220,10 +215,15 @@ as_data_frame(stormdata.small)
 ```
 
 
+### Saving a portion of the dataset
+If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file.
+
+
 ```r
 # save unique events by year
 save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
 ```
+
 
 ### Event Types `EVTYPE`
 
@@ -339,7 +339,7 @@ p2 <- ggplot(byEvent.005, aes(EVTYPE, injur.sum)) +
 gridExtra::grid.arrange(p1, p2)
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
 
@@ -461,7 +461,7 @@ ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
   geom_bar(stat = "identity")
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
 
 
 
@@ -524,12 +524,6 @@ Here is how we know how many observations do not carry the "K", "M" and "B" iden
 unknown <- stormdata %>%
   select(STATE, EVTYPE, PROPDMGEXP, CROPDMGEXP, REMARKS) %>%
   filter(!toupper(PROPDMGEXP) %in% c("K", "M", "B") | !toupper(CROPDMGEXP) %in% c("K", "M", "B"))
-
-dim(unknown)[1]
-```
-
-```
-[1] 622760
 ```
 
 There are 622760 observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
@@ -630,7 +624,7 @@ ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-28-1.png)<!-- -->
 
 
 ```r
@@ -638,7 +632,7 @@ ggplot(byYearSummary, aes(x = year, y = fatalities)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-30-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
 
 
 ```r
@@ -646,7 +640,7 @@ ggplot(byYearSummary, aes(x = year, y = injuries)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-31-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-30-1.png)<!-- -->
 
 
 
