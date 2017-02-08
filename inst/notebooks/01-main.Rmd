@@ -217,17 +217,18 @@ We plot now the top 5 events that cause more harm on the population:
 
 byEvent.005 <- byEvent.0[1:5, ]
 
-p1 <- ggplot(byEvent.005, aes(x = EVTYPE, y = fatal.sum)) +
+p1 <- ggplot(byEvent.005, aes(x = reorder(EVTYPE, -fatal.sum), y = fatal.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Fatalities") +
   geom_text(aes(label=fatal.sum, vjust = -0.25))
 
-p2 <- ggplot(byEvent.005, aes(EVTYPE, injur.sum)) +
+p2 <- ggplot(byEvent.005, aes(x = reorder(EVTYPE, -injur.sum), y = injur.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Injuries") +
   geom_text(aes(label=injur.sum, vjust = -0.25))
 
 gridExtra::grid.arrange(p1, p2)
+grid.rect(gp=gpar(fill=NA))
 ```
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
@@ -271,19 +272,39 @@ byDamage.mm
 
 Get the top 5 and top 10 causes of economic damage.
 ```{r}
-byDamage.mm.top5 <- byDamage.mm[1:5, ]
+byDamage.mm.top5 <- byDamage.mm[1:10, ]
 byDamage.mm.top5
 ```
 
 ```{r}
-ggplot(byDamage.mm.top5, aes(EVTYPE, totaldmg.bi)) +
+ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
-  ggtitle("Impact on Economy") +
+  ggtitle("Total impact on Economy") +
   geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25))
 ```
 
+```{r}
 
+propdmg.bi <- byDamage.mm.top5$propdmg.m/1000
+
+ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg.bi)) +
+  geom_bar(stat = "identity") +
+  labs(y = "Billions US$", x = "Weather event") +
+  ggtitle("Total impact on Property") +
+  geom_text(aes(label=round(propdmg.bi, 0), vjust = -0.25))
+```
+
+```{r}
+
+cropdmg.bi <- byDamage.mm.top5$cropdmg.m/1000
+
+ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg.bi)) +
+  geom_bar(stat = "identity") +
+  labs(y = "Billions US$", x = "Weather event") +
+  ggtitle("Total impact on Crops") +
+  geom_text(aes(label=round(cropdmg.bi, 1), vjust = -0.25))
+```
 
 ### Multiple identifiers for monetary units
 There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
