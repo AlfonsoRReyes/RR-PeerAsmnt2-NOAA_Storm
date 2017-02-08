@@ -102,6 +102,21 @@ names(stormdata.raw)
 ```{r}
 #str(stormdata.raw)
 summary(stormdata.raw)
+```
+
+### What variables do we keep for our analysis?
+
+These are the variable that we consider important for the analysis:
+
+REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS
+```{r}
+stormdata <- stormdata.raw %>%
+select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
+
+```
+
+
+```{r}
 head(stormdata.raw)
 ```
 

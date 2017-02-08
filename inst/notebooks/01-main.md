@@ -100,14 +100,21 @@ stormdata <- stormdata.raw          # for the moment we will use a shorter name
 ```r
 # properties of the dataset
 dim(stormdata.raw)
-names(stormdata.raw)
-#str(stormdata.raw)
-summary(stormdata.raw)
-head(stormdata.raw)
 ```
 
 ```
 [1] 902297     37
+```
+
+There are 902297 observations and 37 variables.
+
+The names of the variables are:
+
+```r
+names(stormdata.raw)
+```
+
+```
  [1] "STATE__"    "BGN_DATE"   "BGN_TIME"   "TIME_ZONE"  "COUNTY"    
  [6] "COUNTYNAME" "STATE"      "EVTYPE"     "BGN_RANGE"  "BGN_AZI"   
 [11] "BGN_LOCATI" "END_DATE"   "END_TIME"   "COUNTY_END" "COUNTYENDN"
@@ -116,6 +123,16 @@ head(stormdata.raw)
 [26] "PROPDMGEXP" "CROPDMG"    "CROPDMGEXP" "WFO"        "STATEOFFIC"
 [31] "ZONENAMES"  "LATITUDE"   "LONGITUDE"  "LATITUDE_E" "LONGITUDE_"
 [36] "REMARKS"    "REFNUM"    
+```
+
+
+
+```r
+#str(stormdata.raw)
+summary(stormdata.raw)
+```
+
+```
     STATE__                  BGN_DATE             BGN_TIME     
  Min.   : 1.0   5/25/2011 0:00:00:  1202   12:00:00 AM: 10163  
  1st Qu.:19.0   4/27/2011 0:00:00:  1193   06:00:00 PM:  7350  
@@ -212,6 +229,13 @@ head(stormdata.raw)
  Trees were downed.\n                          :   446   3rd Qu.:676723  
  Large trees and power lines were blown down.\n:   432   Max.   :902297  
  (Other)                                       :588295                   
+```
+
+```r
+head(stormdata.raw)
+```
+
+```
   STATE__           BGN_DATE BGN_TIME TIME_ZONE COUNTY COUNTYNAME STATE
 1       1  4/18/1950 0:00:00     0130       CST     97     MOBILE    AL
 2       1  4/18/1950 0:00:00     0145       CST      3    BALDWIN    AL
@@ -346,7 +370,7 @@ p2 <- ggplot(byEvent.005, aes(EVTYPE, injur.sum)) +
 gridExtra::grid.arrange(p1, p2)
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
 
@@ -468,7 +492,7 @@ ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
   geom_bar(stat = "identity")
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
 
 
 
@@ -657,7 +681,7 @@ ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-24-1.png)<!-- -->
 
 
 ```r
@@ -665,7 +689,7 @@ ggplot(byYearSummary, aes(x = year, y = fatalities)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-25-1.png)<!-- -->
 
 
 ```r
@@ -673,7 +697,7 @@ ggplot(byYearSummary, aes(x = year, y = injuries)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-24-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-26-1.png)<!-- -->
 
 
 
