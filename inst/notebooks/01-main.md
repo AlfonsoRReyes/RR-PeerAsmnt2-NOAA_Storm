@@ -1,4 +1,4 @@
-# main
+# Analysis of weather impact on people and the economy
 Alfonso R. Reyes  
 
 
@@ -10,15 +10,30 @@ Alfonso R. Reyes
 2. Across the United States, which types of events have the greatest economic consequences?
 
 ## Synopsis
+<ten sentences>
+
 
 
 ## Data Processing
+The data processing consists in the following steps:
+
+1. Download the raw data file from the internet using the `download.file` function.
+2. Unpack the downloaded file (535+ MB) with the function `bunzip` into a CSV file named as `dataset.csv`.
+3. Load the CSV file in the object `stormdata.raw`: 902,297 observations and 37 variables.
+4. Perform a quick analysis of the dataset `stormdata.raw` before applying data transformations.
+5. Create a simplified dataset `stormdata` where some non-relevant variables have been removed but all observations kept. 902,297 observations and 13 variables.
+6. Create a small dataset `stormdata.small` with only 12 variables and all observations still in place. The variable `BGN_DATE` converted to date type and renamed to `DATE`. The size of this file `stormdata.small.rda` is around 6 MB.
+7. Clear the object `stormdata.raw` to save memory. Use only the new and smaller data frame `stormdata`
+8. Create the data frames to respond the first question.
+9. Create the data frame to respond to the second question.
+10. Save an additional dataset to address other questions in the future.
 
 
 ```r
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
+library(grid)
 library(stringr)
 library(rprojroot)
 library(R.utils)
@@ -356,17 +371,18 @@ We plot now the top 5 events that cause more harm on the population:
 ```r
 byEvent.005 <- byEvent.0[1:5, ]
 
-p1 <- ggplot(byEvent.005, aes(x = EVTYPE, y = fatal.sum)) +
+p1 <- ggplot(byEvent.005, aes(x = reorder(EVTYPE, -fatal.sum), y = fatal.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Fatalities") +
   geom_text(aes(label=fatal.sum, vjust = -0.25))
 
-p2 <- ggplot(byEvent.005, aes(EVTYPE, injur.sum)) +
+p2 <- ggplot(byEvent.005, aes(x = reorder(EVTYPE, -injur.sum), y = injur.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Injuries") +
   geom_text(aes(label=injur.sum, vjust = -0.25))
 
 gridExtra::grid.arrange(p1, p2)
+grid.rect(gp=gpar(fill=NA))
 ```
 
 ![](01-main_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
@@ -417,62 +433,98 @@ We convert the thousands to millions of US$ and only one variable, the total eco
 
 
 ```r
-byDamage.m <- byDamage %>%
+byDamage.mm <- byDamage %>%
   
   summarize(propdmg.k = sum(PROPDMG.K), cropdmg.k = sum(CROPDMG.K)) %>%
   mutate(propdmg.m = propdmg.k / 1000, cropdmg.m = cropdmg.k / 1000) %>%
   select(EVTYPE, propdmg.m, cropdmg.m) %>%
-  mutate(totaldmg.m = propdmg.m + cropdmg.m) %>%
+  mutate(totaldmg.mm = propdmg.m + cropdmg.m) %>%
+  mutate(totaldmg.bi = totaldmg.mm / 1000) %>%
   # arrange(desc(propdmg.m), desc(cropdmg.m))
-  arrange(desc(totaldmg.m))
+  arrange(desc(totaldmg.mm))
 
-byDamage.m
+byDamage.mm
 ```
 
 ```
-# A tibble: 985 × 4
-              EVTYPE  propdmg.m  cropdmg.m totaldmg.m
-              <fctr>      <dbl>      <dbl>      <dbl>
-1              FLOOD 144657.710  5661.9685 150319.678
-2  HURRICANE/TYPHOON  69305.840  2607.8728  71913.713
-3            TORNADO  56937.160   414.9531  57352.114
-4        STORM SURGE  43323.536     0.0050  43323.541
-5               HAIL  15732.267  3025.9545  18758.221
-6        FLASH FLOOD  16140.812  1421.3171  17562.129
-7            DROUGHT   1046.106 13972.5660  15018.672
-8          HURRICANE  11868.319  2741.9100  14610.229
-9        RIVER FLOOD   5118.945  5029.4590  10148.405
-10         ICE STORM   3944.928  5022.1135   8967.041
+# A tibble: 985 × 5
+              EVTYPE  propdmg.m  cropdmg.m totaldmg.mm totaldmg.bi
+              <fctr>      <dbl>      <dbl>       <dbl>       <dbl>
+1              FLOOD 144657.710  5661.9685  150319.678  150.319678
+2  HURRICANE/TYPHOON  69305.840  2607.8728   71913.713   71.913713
+3            TORNADO  56937.160   414.9531   57352.114   57.352114
+4        STORM SURGE  43323.536     0.0050   43323.541   43.323541
+5               HAIL  15732.267  3025.9545   18758.221   18.758221
+6        FLASH FLOOD  16140.812  1421.3171   17562.129   17.562129
+7            DROUGHT   1046.106 13972.5660   15018.672   15.018672
+8          HURRICANE  11868.319  2741.9100   14610.229   14.610229
+9        RIVER FLOOD   5118.945  5029.4590   10148.405   10.148404
+10         ICE STORM   3944.928  5022.1135    8967.041    8.967041
 # ... with 975 more rows
 ```
 
 Get the top 5 and top 10 causes of economic damage.
 
 ```r
-byDamage.m.top5 <- byDamage.m[1:5, ]
-byDamage.m.top5
+byDamage.mm.top5 <- byDamage.mm[1:10, ]
+byDamage.mm.top5
 ```
 
 ```
-# A tibble: 5 × 4
-             EVTYPE propdmg.m cropdmg.m totaldmg.m
-             <fctr>     <dbl>     <dbl>      <dbl>
-1             FLOOD 144657.71 5661.9685  150319.68
-2 HURRICANE/TYPHOON  69305.84 2607.8728   71913.71
-3           TORNADO  56937.16  414.9531   57352.11
-4       STORM SURGE  43323.54    0.0050   43323.54
-5              HAIL  15732.27 3025.9545   18758.22
+# A tibble: 10 × 5
+              EVTYPE  propdmg.m  cropdmg.m totaldmg.mm totaldmg.bi
+              <fctr>      <dbl>      <dbl>       <dbl>       <dbl>
+1              FLOOD 144657.710  5661.9685  150319.678  150.319678
+2  HURRICANE/TYPHOON  69305.840  2607.8728   71913.713   71.913713
+3            TORNADO  56937.160   414.9531   57352.114   57.352114
+4        STORM SURGE  43323.536     0.0050   43323.541   43.323541
+5               HAIL  15732.267  3025.9545   18758.221   18.758221
+6        FLASH FLOOD  16140.812  1421.3171   17562.129   17.562129
+7            DROUGHT   1046.106 13972.5660   15018.672   15.018672
+8          HURRICANE  11868.319  2741.9100   14610.229   14.610229
+9        RIVER FLOOD   5118.945  5029.4590   10148.405   10.148404
+10         ICE STORM   3944.928  5022.1135    8967.041    8.967041
 ```
 
 
 ```r
-ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
-  geom_bar(stat = "identity")
+ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)) +
+  geom_bar(stat = "identity") +
+  labs(y = "Billions US$", x = "Weather event") +
+  ggtitle("Total impact on Economy") +
+  geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25)) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
 ![](01-main_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
 
 
+```r
+propdmg.bi <- byDamage.mm.top5$propdmg.m/1000
+
+ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg.bi)) +
+  geom_bar(stat = "identity") +
+  labs(y = "Billions US$", x = "Weather event") +
+  ggtitle("Economic impact on Property") +
+  geom_text(aes(label=round(propdmg.bi, 0), vjust = -0.25)) + 
+theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+![](01-main_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+
+
+```r
+cropdmg.bi <- byDamage.mm.top5$cropdmg.m/1000
+
+ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg.bi)) +
+  geom_bar(stat = "identity") +
+  labs(y = "Billions US$", x = "Weather event") +
+  ggtitle("Economic impact on Crops") +
+  geom_text(aes(label=round(cropdmg.bi, 1), vjust = -0.25)) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+![](01-main_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
 
 ### Multiple identifiers for monetary units
 There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
@@ -604,52 +656,56 @@ byYearSummary <- byYearEvent %>%
   group_by(year) %>%
   summarize(fatalities = sum(fatalities), 
             injuries = sum(injuries),
-            damage.mm = sum(propdmg.M) + sum(cropdmg.M)
+            damage.mm = sum(propdmg.M) + sum(cropdmg.M),
+            damage.bb = damage.mm / 1000
             )
 
 byYearSummary
 ```
 
 ```
-# A tibble: 62 × 4
-    year fatalities injuries damage.mm
-   <dbl>      <dbl>    <dbl>     <dbl>
-1   1950         70      659  34.48165
-2   1951         34      524  65.50599
-3   1952        230     1915  94.10224
-4   1953        519     5131 596.10470
-5   1954         36      715  85.80532
-6   1955        129      926  82.66063
-7   1956         83     1355 116.91235
-8   1957        193     1976 224.38889
-9   1958         67      535 128.99461
-10  1959         58      734  87.45304
+# A tibble: 62 × 5
+    year fatalities injuries damage.mm  damage.bb
+   <dbl>      <dbl>    <dbl>     <dbl>      <dbl>
+1   1950         70      659  34.48165 0.03448165
+2   1951         34      524  65.50599 0.06550599
+3   1952        230     1915  94.10224 0.09410224
+4   1953        519     5131 596.10470 0.59610470
+5   1954         36      715  85.80532 0.08580532
+6   1955        129      926  82.66063 0.08266063
+7   1956         83     1355 116.91235 0.11691235
+8   1957        193     1976 224.38889 0.22438889
+9   1958         67      535 128.99461 0.12899461
+10  1959         58      734  87.45304 0.08745304
 # ... with 52 more rows
 ```
 
 
 ```r
-ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
-  geom_point()
-```
+q1 <- ggplot(byYearSummary, aes(x = year, y = damage.bb)) +
+  geom_point() + 
+  ggtitle("Impact on economy 1950-2011") + 
+  labs(y = "Billions US$") +
+  theme(plot.title = element_text(hjust=0.5))
+q2 <- ggplot(byYearSummary, aes(x = year, y = fatalities)) +
+  geom_point() +
+  ggtitle("impact on human life, 1950-2011") +
+  labs(y = "Fatalities") +
+    theme(plot.title = element_text(hjust=0.5))
 
-![](01-main_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
+q3 <- ggplot(byYearSummary, aes(x = year, y = injuries)) +
+  geom_point() +
+  ggtitle("impact on health, 1950-2011") +
+  labs(y = "Injured") +
+    theme(plot.title = element_text(hjust=0.5))
+  
 
-
-```r
-ggplot(byYearSummary, aes(x = year, y = fatalities)) +
-  geom_point()
-```
-
-![](01-main_files/figure-html/unnamed-chunk-30-1.png)<!-- -->
-
-
-```r
-ggplot(byYearSummary, aes(x = year, y = injuries)) +
-  geom_point()
+gridExtra::grid.arrange(q1, arrangeGrob(q2, q3), ncol=2)
+grid.rect(gp=gpar(fill=NA))
 ```
 
 ![](01-main_files/figure-html/unnamed-chunk-31-1.png)<!-- -->
+
 
 
 
@@ -659,8 +715,11 @@ save(byYearSummary, file = paste(project.data, "byYearSummary.rda", sep = "/"))
 ```
 
 ## Results
+<present the results here>
 
 ## Figures
 Maximum: 03. Can use panels.
 
 ## Code
+
+
