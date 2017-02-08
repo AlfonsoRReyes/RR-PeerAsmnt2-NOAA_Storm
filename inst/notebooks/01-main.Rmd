@@ -40,6 +40,7 @@ The data processing consists in the following steps:
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
+library(grid)
 library(stringr)
 library(rprojroot)
 library(R.utils)
@@ -366,20 +367,24 @@ byYearSummary
 ```{r fig.asp=1}
 q1 <- ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
   geom_point() + 
-  ggtitle("Weather impact on the economy 1950-2011") + 
-  labs(y = "MM US$")
+  ggtitle("Impact on economy 1950-2011") + 
+  labs(y = "MM US$") +
+  theme(plot.title = element_text(hjust=0.5))
 q2 <- ggplot(byYearSummary, aes(x = year, y = fatalities)) +
   geom_point() +
-  ggtitle("Weather impact on human life, 1950-2011") +
-  labs(y = "Fatalities")
+  ggtitle("impact on human life, 1950-2011") +
+  labs(y = "Fatalities") +
+    theme(plot.title = element_text(hjust=0.5))
 
 q3 <- ggplot(byYearSummary, aes(x = year, y = injuries)) +
   geom_point() +
-  ggtitle("Weather impact on health, 1950-2011") +
-  labs(y = "Injured")
+  ggtitle("impact on health, 1950-2011") +
+  labs(y = "Injured") +
+    theme(plot.title = element_text(hjust=0.5))
   
 
-gridExtra::grid.arrange(q1, q2, q3)
+gridExtra::grid.arrange(q1, arrangeGrob(q2, q3), ncol=2)
+grid.rect(gp=gpar(fill=NA))
 ```
 
 
@@ -396,3 +401,12 @@ save(byYearSummary, file = paste(project.data, "byYearSummary.rda", sep = "/"))
 Maximum: 03. Can use panels.
 
 ## Code
+
+```{r}
+gs <- lapply(1:9, function(ii) 
+  grobTree(rectGrob(gp=gpar(fill=ii, alpha=0.5)), textGrob(ii)))
+
+grid.arrange(grobs=gs[1:3], ncol=2, widths = 1:2, 
+             heights=unit(c(1,10), c("in", "mm")))
+```
+
