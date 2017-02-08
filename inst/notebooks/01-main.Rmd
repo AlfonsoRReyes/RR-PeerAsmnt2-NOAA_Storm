@@ -33,6 +33,7 @@ root_file <- root$make_fix_file()
 # root$find_file("REAME.md")
 root_file()
 ```
+
 ### Set up project folders with `rprojroot`
 ```{r results='hold'}
 cat("Setting up the project folders:\n")
@@ -44,6 +45,7 @@ project.data
 project.extdata
 project.R
 ```
+
 
 ```{r message=FALSE, warning=FALSE}
 downloadZip <- function(fileUrl, outDir="./data", bzip2 = FALSE) {
