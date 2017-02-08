@@ -1,4 +1,4 @@
-# main
+# Analysis of weather impact on people and the economy
 Alfonso R. Reyes  
 
 
@@ -10,18 +10,20 @@ Alfonso R. Reyes
 2. Across the United States, which types of events have the greatest economic consequences?
 
 ## Synopsis
+<ten sentences>
+
 
 
 ## Data Processing
-The data processing consisted in the following steps:
+The data processing consists in the following steps:
 
 1. Download the raw data file from the internet using the `download.file` function.
-2. Unpack the downloaded file (500+ MB) into a CSV file.
-3. Load the CSV file in the object `stormdata.raw`.
+2. Unpack the downloaded file (535+ MB) with the function `bunzip` into a CSV file named as `dataset.csv`.
+3. Load the CSV file in the object `stormdata.raw`: 902,297 observations and 37 variables.
 4. Perform a quick analysis of the dataset `stormdata.raw` before applying data transformations.
-5. Create a simplified dataset `stormdata` where some non-relevant variables have been removed but all observations kept.
-6. Create a small dataset `stormdata.small` with only 12 variables remaining and all observations still in place. The size of this file is around 6 MB.
-7. Clear the object `stormdata.raw` to save memory.
+5. Create a simplified dataset `stormdata` where some non-relevant variables have been removed but all observations kept. 902,297 observations and 13 variables.
+6. Create a small dataset `stormdata.small` with only 12 variables and all observations still in place. The variable `BGN_DATE` converted to date type and renamed to `DATE`. The size of this file `stormdata.small.rda` is around 6 MB.
+7. Clear the object `stormdata.raw` to save memory. Use only the new and smaller data frame `stormdata`
 8. Create the data frames to respond the first question.
 9. Create the data frame to respond to the second question.
 10. Save an additional dataset to address other questions in the future.
@@ -31,6 +33,7 @@ The data processing consisted in the following steps:
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
+library(grid)
 library(stringr)
 library(rprojroot)
 library(R.utils)
@@ -641,27 +644,30 @@ byYearSummary
 
 
 ```r
-ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
-  geom_point()
+q1 <- ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
+  geom_point() + 
+  ggtitle("Impact on economy 1950-2011") + 
+  labs(y = "MM US$") +
+  theme(plot.title = element_text(hjust=0.5))
+q2 <- ggplot(byYearSummary, aes(x = year, y = fatalities)) +
+  geom_point() +
+  ggtitle("impact on human life, 1950-2011") +
+  labs(y = "Fatalities") +
+    theme(plot.title = element_text(hjust=0.5))
+
+q3 <- ggplot(byYearSummary, aes(x = year, y = injuries)) +
+  geom_point() +
+  ggtitle("impact on health, 1950-2011") +
+  labs(y = "Injured") +
+    theme(plot.title = element_text(hjust=0.5))
+  
+
+gridExtra::grid.arrange(q1, arrangeGrob(q2, q3), ncol=2)
+grid.rect(gp=gpar(fill=NA))
 ```
 
 ![](01-main_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
 
-
-```r
-ggplot(byYearSummary, aes(x = year, y = fatalities)) +
-  geom_point()
-```
-
-![](01-main_files/figure-html/unnamed-chunk-30-1.png)<!-- -->
-
-
-```r
-ggplot(byYearSummary, aes(x = year, y = injuries)) +
-  geom_point()
-```
-
-![](01-main_files/figure-html/unnamed-chunk-31-1.png)<!-- -->
 
 
 
@@ -671,8 +677,11 @@ save(byYearSummary, file = paste(project.data, "byYearSummary.rda", sep = "/"))
 ```
 
 ## Results
+<present the results here>
 
 ## Figures
 Maximum: 03. Can use panels.
 
 ## Code
+
+

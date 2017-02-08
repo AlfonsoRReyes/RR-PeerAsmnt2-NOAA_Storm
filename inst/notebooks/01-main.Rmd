@@ -256,27 +256,31 @@ We convert the thousands to millions of US$ and only one variable, the total eco
 
 ```{r}
 
-byDamage.m <- byDamage %>%
+byDamage.mm <- byDamage %>%
   
   summarize(propdmg.k = sum(PROPDMG.K), cropdmg.k = sum(CROPDMG.K)) %>%
   mutate(propdmg.m = propdmg.k / 1000, cropdmg.m = cropdmg.k / 1000) %>%
   select(EVTYPE, propdmg.m, cropdmg.m) %>%
-  mutate(totaldmg.m = propdmg.m + cropdmg.m) %>%
+  mutate(totaldmg.mm = propdmg.m + cropdmg.m) %>%
+  mutate(totaldmg.bi = totaldmg.mm / 1000) %>%
   # arrange(desc(propdmg.m), desc(cropdmg.m))
-  arrange(desc(totaldmg.m))
+  arrange(desc(totaldmg.mm))
 
-byDamage.m
+byDamage.mm
 ```
 
 Get the top 5 and top 10 causes of economic damage.
 ```{r}
-byDamage.m.top5 <- byDamage.m[1:5, ]
-byDamage.m.top5
+byDamage.mm.top5 <- byDamage.mm[1:5, ]
+byDamage.mm.top5
 ```
 
 ```{r}
-ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
-  geom_bar(stat = "identity")
+ggplot(byDamage.mm.top5, aes(EVTYPE, totaldmg.bi)) +
+  geom_bar(stat = "identity") +
+  labs(y = "Billions US$", x = "Weather event") +
+  ggtitle("Impact on Economy") +
+  geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25))
 ```
 
 
@@ -358,17 +362,18 @@ byYearSummary <- byYearEvent %>%
   group_by(year) %>%
   summarize(fatalities = sum(fatalities), 
             injuries = sum(injuries),
-            damage.mm = sum(propdmg.M) + sum(cropdmg.M)
+            damage.mm = sum(propdmg.M) + sum(cropdmg.M),
+            damage.bb = damage.mm / 1000
             )
 
 byYearSummary
 ```
 
 ```{r fig.asp=1}
-q1 <- ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
+q1 <- ggplot(byYearSummary, aes(x = year, y = damage.bb)) +
   geom_point() + 
   ggtitle("Impact on economy 1950-2011") + 
-  labs(y = "MM US$") +
+  labs(y = "Billions US$") +
   theme(plot.title = element_text(hjust=0.5))
 q2 <- ggplot(byYearSummary, aes(x = year, y = fatalities)) +
   geom_point() +
@@ -402,11 +407,4 @@ Maximum: 03. Can use panels.
 
 ## Code
 
-```{r}
-gs <- lapply(1:9, function(ii) 
-  grobTree(rectGrob(gp=gpar(fill=ii, alpha=0.5)), textGrob(ii)))
-
-grid.arrange(grobs=gs[1:3], ncol=2, widths = 1:2, 
-             heights=unit(c(1,10), c("in", "mm")))
-```
 
