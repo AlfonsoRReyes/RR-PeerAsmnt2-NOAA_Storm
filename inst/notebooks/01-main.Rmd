@@ -28,14 +28,15 @@ library(stringr)
 library(rprojroot)
 library(R.utils)
 
-root <- rprojroot::is_rstudio_project
-root_file <- root$make_fix_file()
-# root$find_file("REAME.md")
-root_file()
 ```
 
 ### Set up project folders with `rprojroot`
 ```{r results='hold'}
+# package rprojroot required
+root <- rprojroot::is_rstudio_project
+root_file <- root$make_fix_file()
+# root$find_file("REAME.md")
+root_file()
 cat("Setting up the project folders:\n")
 project.data <- root_file("data")
 project.extdata <- root_file("inst/extdata")
@@ -49,27 +50,27 @@ project.R
 
 ```{r message=FALSE, warning=FALSE}
 downloadZip <- function(fileUrl, outDir="./data", bzip2 = FALSE) {
-  # function to download zipped file and unpack
+  # function to download zipped and bunzip2 files and unpack
   temp <- tempfile()
   download.file(fileUrl, temp, mode = "wb")
   if (bzip2 == FALSE) {
     unzip(temp, exdir = outDir)
   }
   else {
-
-    destfile <- paste(outDir, "dataset.csv", sep = "/")
-    bunzip2(temp, destname = destfile, overwrite = TRUE)
+    destfile <- paste(outDir, "dataset.csv", sep = "/")  # provide a filename
+    bunzip2(temp, destname = destfile, overwrite = TRUE) # unpack bunzip2 file
   }
 }
 ```
 
 
 ```{r cache=TRUE}
+# URL of the dataset file
 fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
 cat("Unpacking the raw data file:\n")
 
 outDir <- project.extdata             # folder for raw data
-downloadZip(fileUrl, outDir = outDir, bzip2 = TRUE)   # download and unpack zip file
+downloadZip(fileUrl, outDir = outDir, bzip2 = TRUE)   # download and unpack file
 ```
 
 
@@ -77,7 +78,7 @@ downloadZip(fileUrl, outDir = outDir, bzip2 = TRUE)   # download and unpack zip 
 # read the CSV file to memory
 dataFile <- paste(project.extdata, "dataset.csv", sep = "/")
 stormdata.raw <- read.csv(dataFile)
-stormdata <- stormdata.raw
+stormdata <- stormdata.raw          # for the moment we will use a shorter name
 ```
 
 
@@ -85,7 +86,7 @@ stormdata <- stormdata.raw
 # properties of the dataset
 dim(stormdata.raw)
 names(stormdata.raw)
-str(stormdata.raw)
+#str(stormdata.raw)
 summary(stormdata.raw)
 head(stormdata.raw)
 ```
@@ -93,12 +94,13 @@ head(stormdata.raw)
 ### Event Types `EVTYPE`
 
 ```{r}
+# want to know how levels this factor has
 head(unique(stormdata.raw$EVTYPE), 10)
 ```
 
 There are `r length(unique(stormdata.raw$EVTYPE))` different type of events.
 
-We want to find which type of events is more harmful to population health. We could group by EVTYPE and showing the variables FATALITIES and INJURIES.
+We want to find now which type of events is more harmful to population health. We could group by `EVTYPE` and showing the variables FATALITIES and INJURIES.
 
 
 ```{r}
@@ -121,6 +123,7 @@ byEvent.1 <- stormdata %>%
 byEvent.1
 ```
 
+We plot now the top 5 events that cause more harm on the population:
 
 ```{r fig.asp=1}
 
@@ -161,6 +164,7 @@ byDamage <- stormdata %>%
 byDamage
 ```
 
+We converts the thousands to millions of US$ and only one variable, the total economic damage.
 
 ```{r}
 
@@ -176,6 +180,7 @@ byDamage.m <- byDamage %>%
 byDamage.m
 ```
 
+Get the top 5 and top 10 causes of economic damage.
 ```{r}
 byDamage.m.top5 <- byDamage.m[1:5, ]
 byDamage.m.top5
@@ -212,8 +217,11 @@ ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
 
 
 
+### Multiple identifiers for monetary units
+There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
+There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. Besides the identifiers `B`, `M` and `K`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts. In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data.
 
-
+Other characters or digits did not bring a special meaning to the dollar amount, so we didn't convert them even thoiugh we read the remarks to find some relationship.
 
 
 ```{r}
@@ -229,18 +237,18 @@ summary(byDamage)
 
 ```
 
-There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
-There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. Besides the identifiers `B`, `M` and `K`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts.
 
+Here is how we know how many observations do not carry the "K", "M" and "B" identifiers.
 
 ```{r}
 unknown <- stormdata %>%
-  select(STATE, COUNTY, EVTYPE, PROPDMG, PROPDMGEXP, REMARKS) %>%
-  filter(!PROPDMGEXP %in% c("K", "M", "B"))
+  select(STATE, EVTYPE, PROPDMGEXP, CROPDMGEXP, REMARKS) %>%
+  filter(!toupper(PROPDMGEXP) %in% c("K", "M", "B") | !toupper(CROPDMGEXP) %in% c("K", "M", "B"))
 
-head(unknown)
+dim(unknown)[1]
 ```
 
+There are `r dim(unknown)[1]` observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
 
 
 ## Results
