@@ -1,7 +1,8 @@
 ---
 title: "main"
 output:
-  html_document: default
+  html_document: 
+    keep_md: yes
   html_notebook: default
 ---
 
@@ -88,7 +89,17 @@ stormdata <- stormdata.raw          # for the moment we will use a shorter name
 ```{r results='hold'}
 # properties of the dataset
 dim(stormdata.raw)
+```
+
+There are `r dim(stormdata.raw)[1]` observations and `r dim(stormdata.raw)[2]` variables.
+
+The names of the variables are:
+```{r}
 names(stormdata.raw)
+```
+
+
+```{r}
 #str(stormdata.raw)
 summary(stormdata.raw)
 head(stormdata.raw)
