@@ -252,6 +252,48 @@ dim(unknown)[1]
 
 There are `r dim(unknown)[1]` observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
 
+### Saving some data
+
+```{r}
+# By year, by event
+byYearEvent <- stormdata %>%
+  group_by(BGN_DATE, EVTYPE) %>%
+  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))), 
+         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP))))     %>%
+  mutate(PROPDMG.K = ifelse(PROPDMGEXP == "K", PROPDMG * 1,
+                     ifelse(PROPDMGEXP == "M", PROPDMG * 1000,
+                     ifelse(PROPDMGEXP == "B", PROPDMG * 1E6, 0)))) %>%
+  mutate(CROPDMG.K = ifelse(CROPDMGEXP == "K", CROPDMG * 1,
+                     ifelse(CROPDMGEXP == "M", CROPDMG * 1000,
+                     ifelse(CROPDMGEXP == "B", CROPDMG * 1E6, 0)))) %>%
+  summarize(fatalities = sum(FATALITIES), 
+            injuries   = sum(INJURIES),
+            propdmg.M  = sum(PROPDMG.K) / 1000,
+            cropdmg.M  = sum(CROPDMG.K) /1000
+            )
+
+byYearEvent
+```
+
+
+```{r}
+# save unique events by year
+save(byYearEvent, file = paste(project.data, "byYearEvent.rda", sep = "/"))
+```
+
+### Have the number of fatalities and injuries increased over the years?
+
+```{r}
+load(paste(project.data, "byYearEvent.rda", sep = "/"))  # load the data
+
+byYearSummary <- byYearEvent %>%
+  mutate(year = year(mdy_hms(as.character(BGN_DATE)))) %>%
+  group_by(year) %>%
+  summarize(fatalities = sum(fatalities), injuries = sum(injuries))
+
+byYearSummary
+```
+
 
 ## Results
 
