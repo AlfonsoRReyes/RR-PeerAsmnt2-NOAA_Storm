@@ -28,6 +28,31 @@ project.extdata
 project.R
 ```
 
+```{r message=FALSE, warning=FALSE}
+downloadZip <- function(fileUrl, outDir="./data", bzip2 = FALSE) {
+  # function to download zipped file and unpack
+  temp <- tempfile()
+  download.file(fileUrl, temp, mode = "wb")
+  if (bzip2 == FALSE) {
+    unzip(temp, exdir = outDir)
+  }
+  else {
+    library(R.utils)
+    destfile <- paste(outDir, "dataset.csv", sep = "/")
+    bunzip2(temp, destname = destfile, overwrite = TRUE)
+  }
+}
+```
+
+
+```{r cache=TRUE}
+fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+cat("Unpacking the raw data file:\n")
+
+outDir <- project.extdata             # folder for raw data
+downloadZip(fileUrl, outDir = outDir, bzip2 = TRUE)   # download and unpack zip file
+```
+
 
 
 ## Results
