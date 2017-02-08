@@ -432,57 +432,61 @@ We convert the thousands to millions of US$ and only one variable, the total eco
 
 
 ```r
-byDamage.m <- byDamage %>%
+byDamage.mm <- byDamage %>%
   
   summarize(propdmg.k = sum(PROPDMG.K), cropdmg.k = sum(CROPDMG.K)) %>%
   mutate(propdmg.m = propdmg.k / 1000, cropdmg.m = cropdmg.k / 1000) %>%
   select(EVTYPE, propdmg.m, cropdmg.m) %>%
-  mutate(totaldmg.m = propdmg.m + cropdmg.m) %>%
+  mutate(totaldmg.mm = propdmg.m + cropdmg.m) %>%
+  mutate(totaldmg.bi = totaldmg.mm / 1000) %>%
   # arrange(desc(propdmg.m), desc(cropdmg.m))
-  arrange(desc(totaldmg.m))
+  arrange(desc(totaldmg.mm))
 
-byDamage.m
+byDamage.mm
 ```
 
 ```
-# A tibble: 985 × 4
-              EVTYPE  propdmg.m  cropdmg.m totaldmg.m
-              <fctr>      <dbl>      <dbl>      <dbl>
-1              FLOOD 144657.710  5661.9685 150319.678
-2  HURRICANE/TYPHOON  69305.840  2607.8728  71913.713
-3            TORNADO  56937.160   414.9531  57352.114
-4        STORM SURGE  43323.536     0.0050  43323.541
-5               HAIL  15732.267  3025.9545  18758.221
-6        FLASH FLOOD  16140.812  1421.3171  17562.129
-7            DROUGHT   1046.106 13972.5660  15018.672
-8          HURRICANE  11868.319  2741.9100  14610.229
-9        RIVER FLOOD   5118.945  5029.4590  10148.405
-10         ICE STORM   3944.928  5022.1135   8967.041
+# A tibble: 985 × 5
+              EVTYPE  propdmg.m  cropdmg.m totaldmg.mm totaldmg.bi
+              <fctr>      <dbl>      <dbl>       <dbl>       <dbl>
+1              FLOOD 144657.710  5661.9685  150319.678  150.319678
+2  HURRICANE/TYPHOON  69305.840  2607.8728   71913.713   71.913713
+3            TORNADO  56937.160   414.9531   57352.114   57.352114
+4        STORM SURGE  43323.536     0.0050   43323.541   43.323541
+5               HAIL  15732.267  3025.9545   18758.221   18.758221
+6        FLASH FLOOD  16140.812  1421.3171   17562.129   17.562129
+7            DROUGHT   1046.106 13972.5660   15018.672   15.018672
+8          HURRICANE  11868.319  2741.9100   14610.229   14.610229
+9        RIVER FLOOD   5118.945  5029.4590   10148.405   10.148404
+10         ICE STORM   3944.928  5022.1135    8967.041    8.967041
 # ... with 975 more rows
 ```
 
 Get the top 5 and top 10 causes of economic damage.
 
 ```r
-byDamage.m.top5 <- byDamage.m[1:5, ]
-byDamage.m.top5
+byDamage.mm.top5 <- byDamage.mm[1:5, ]
+byDamage.mm.top5
 ```
 
 ```
-# A tibble: 5 × 4
-             EVTYPE propdmg.m cropdmg.m totaldmg.m
-             <fctr>     <dbl>     <dbl>      <dbl>
-1             FLOOD 144657.71 5661.9685  150319.68
-2 HURRICANE/TYPHOON  69305.84 2607.8728   71913.71
-3           TORNADO  56937.16  414.9531   57352.11
-4       STORM SURGE  43323.54    0.0050   43323.54
-5              HAIL  15732.27 3025.9545   18758.22
+# A tibble: 5 × 5
+             EVTYPE propdmg.m cropdmg.m totaldmg.mm totaldmg.bi
+             <fctr>     <dbl>     <dbl>       <dbl>       <dbl>
+1             FLOOD 144657.71 5661.9685   150319.68   150.31968
+2 HURRICANE/TYPHOON  69305.84 2607.8728    71913.71    71.91371
+3           TORNADO  56937.16  414.9531    57352.11    57.35211
+4       STORM SURGE  43323.54    0.0050    43323.54    43.32354
+5              HAIL  15732.27 3025.9545    18758.22    18.75822
 ```
 
 
 ```r
-ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
-  geom_bar(stat = "identity")
+ggplot(byDamage.mm.top5, aes(EVTYPE, totaldmg.bi)) +
+  geom_bar(stat = "identity") +
+  labs(y = "Billions US$", x = "Weather event") +
+  ggtitle("Impact on Economy") +
+  geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25))
 ```
 
 ![](01-main_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
@@ -619,35 +623,36 @@ byYearSummary <- byYearEvent %>%
   group_by(year) %>%
   summarize(fatalities = sum(fatalities), 
             injuries = sum(injuries),
-            damage.mm = sum(propdmg.M) + sum(cropdmg.M)
+            damage.mm = sum(propdmg.M) + sum(cropdmg.M),
+            damage.bb = damage.mm / 1000
             )
 
 byYearSummary
 ```
 
 ```
-# A tibble: 62 × 4
-    year fatalities injuries damage.mm
-   <dbl>      <dbl>    <dbl>     <dbl>
-1   1950         70      659  34.48165
-2   1951         34      524  65.50599
-3   1952        230     1915  94.10224
-4   1953        519     5131 596.10470
-5   1954         36      715  85.80532
-6   1955        129      926  82.66063
-7   1956         83     1355 116.91235
-8   1957        193     1976 224.38889
-9   1958         67      535 128.99461
-10  1959         58      734  87.45304
+# A tibble: 62 × 5
+    year fatalities injuries damage.mm  damage.bb
+   <dbl>      <dbl>    <dbl>     <dbl>      <dbl>
+1   1950         70      659  34.48165 0.03448165
+2   1951         34      524  65.50599 0.06550599
+3   1952        230     1915  94.10224 0.09410224
+4   1953        519     5131 596.10470 0.59610470
+5   1954         36      715  85.80532 0.08580532
+6   1955        129      926  82.66063 0.08266063
+7   1956         83     1355 116.91235 0.11691235
+8   1957        193     1976 224.38889 0.22438889
+9   1958         67      535 128.99461 0.12899461
+10  1959         58      734  87.45304 0.08745304
 # ... with 52 more rows
 ```
 
 
 ```r
-q1 <- ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
+q1 <- ggplot(byYearSummary, aes(x = year, y = damage.bb)) +
   geom_point() + 
   ggtitle("Impact on economy 1950-2011") + 
-  labs(y = "MM US$") +
+  labs(y = "Billions US$") +
   theme(plot.title = element_text(hjust=0.5))
 q2 <- ggplot(byYearSummary, aes(x = year, y = fatalities)) +
   geom_point() +
