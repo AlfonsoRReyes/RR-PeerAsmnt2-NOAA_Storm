@@ -2,9 +2,9 @@
 title: "Analysis of weather impact on people and the economy"
 author: "Alfonso R. Reyes"
 output:
+  html_notebook: default
   html_document:
     keep_md: yes
-  html_notebook: default
 ---
 
 ```{r setup, include=FALSE, error=TRUE, message=FALSE}
@@ -285,38 +285,37 @@ byDamage.mm.top5 <- byDamage.mm[1:10, ]
 byDamage.mm.top5
 ```
 
-```{r}
-ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)) +
+```{r fig.asp=1}
+# plots for economic losses
+r1 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Total impact on Economy") +
   geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25)) +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
-```
-
-```{r}
 
 propdmg.bi <- byDamage.mm.top5$propdmg.m/1000
 
-ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg.bi)) +
+r2 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Economic impact on Property") +
   geom_text(aes(label=round(propdmg.bi, 0), vjust = -0.25)) + 
 theme(axis.text.x = element_text(angle = 30, hjust = 1))
-```
-
-```{r}
 
 cropdmg.bi <- byDamage.mm.top5$cropdmg.m/1000
 
-ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg.bi)) +
+r3 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Economic impact on Crops") +
   geom_text(aes(label=round(cropdmg.bi, 1), vjust = -0.25)) +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)
+grid.rect(gp=gpar(fill=NA))
 ```
+
 
 ### Multiple identifiers for monetary units
 There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
