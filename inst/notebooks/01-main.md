@@ -1,4 +1,5 @@
 # main
+Alfonso R. Reyes  
 
 
 
@@ -120,6 +121,35 @@ names(stormdata.raw)
 [26] "PROPDMGEXP" "CROPDMG"    "CROPDMGEXP" "WFO"        "STATEOFFIC"
 [31] "ZONENAMES"  "LATITUDE"   "LONGITUDE"  "LATITUDE_E" "LONGITUDE_"
 [36] "REMARKS"    "REFNUM"    
+```
+
+
+```r
+as_data_frame(stormdata.raw)
+```
+
+```
+# A tibble: 902,297 × 37
+   STATE__           BGN_DATE BGN_TIME TIME_ZONE COUNTY COUNTYNAME  STATE
+     <dbl>             <fctr>   <fctr>    <fctr>  <dbl>     <fctr> <fctr>
+1        1  4/18/1950 0:00:00     0130       CST     97     MOBILE     AL
+2        1  4/18/1950 0:00:00     0145       CST      3    BALDWIN     AL
+3        1  2/20/1951 0:00:00     1600       CST     57    FAYETTE     AL
+4        1   6/8/1951 0:00:00     0900       CST     89    MADISON     AL
+5        1 11/15/1951 0:00:00     1500       CST     43    CULLMAN     AL
+6        1 11/15/1951 0:00:00     2000       CST     77 LAUDERDALE     AL
+7        1 11/16/1951 0:00:00     0100       CST      9     BLOUNT     AL
+8        1  1/22/1952 0:00:00     0900       CST    123 TALLAPOOSA     AL
+9        1  2/13/1952 0:00:00     2000       CST    125 TUSCALOOSA     AL
+10       1  2/13/1952 0:00:00     2000       CST     57    FAYETTE     AL
+# ... with 902,287 more rows, and 30 more variables: EVTYPE <fctr>,
+#   BGN_RANGE <dbl>, BGN_AZI <fctr>, BGN_LOCATI <fctr>, END_DATE <fctr>,
+#   END_TIME <fctr>, COUNTY_END <dbl>, COUNTYENDN <lgl>, END_RANGE <dbl>,
+#   END_AZI <fctr>, END_LOCATI <fctr>, LENGTH <dbl>, WIDTH <dbl>, F <int>,
+#   MAG <dbl>, FATALITIES <dbl>, INJURIES <dbl>, PROPDMG <dbl>,
+#   PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>, WFO <fctr>,
+#   STATEOFFIC <fctr>, ZONENAMES <fctr>, LATITUDE <dbl>, LONGITUDE <dbl>,
+#   LATITUDE_E <dbl>, LONGITUDE_ <dbl>, REMARKS <fctr>, REFNUM <dbl>
 ```
 
 
@@ -258,7 +288,7 @@ an error!
 
 There are 985 different type of events.
 
-### Create data frame for 1st question
+### Create data frames for 1st question
 We want to find now which type of events is more harmful to population health. We could group by `EVTYPE` and showing the variables FATALITIES and INJURIES.
 
 
@@ -339,7 +369,7 @@ p2 <- ggplot(byEvent.005, aes(EVTYPE, injur.sum)) +
 gridExtra::grid.arrange(p1, p2)
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
 
@@ -434,34 +464,13 @@ byDamage.m.top5
 5              HAIL  15732.27 3025.9545   18758.22
 ```
 
-```r
-byDamage.m.top10 <- byDamage.m[1:10, ]
-byDamage.m.top10
-```
-
-```
-# A tibble: 10 × 4
-              EVTYPE  propdmg.m  cropdmg.m totaldmg.m
-              <fctr>      <dbl>      <dbl>      <dbl>
-1              FLOOD 144657.710  5661.9685 150319.678
-2  HURRICANE/TYPHOON  69305.840  2607.8728  71913.713
-3            TORNADO  56937.160   414.9531  57352.114
-4        STORM SURGE  43323.536     0.0050  43323.541
-5               HAIL  15732.267  3025.9545  18758.221
-6        FLASH FLOOD  16140.812  1421.3171  17562.129
-7            DROUGHT   1046.106 13972.5660  15018.672
-8          HURRICANE  11868.319  2741.9100  14610.229
-9        RIVER FLOOD   5118.945  5029.4590  10148.405
-10         ICE STORM   3944.928  5022.1135   8967.041
-```
-
 
 ```r
 ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
   geom_bar(stat = "identity")
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
 
 
 
@@ -529,7 +538,7 @@ unknown <- stormdata %>%
 There are 622760 observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
 
 
-### Saving some data
+### Preparing the data for other questions
 We save few datasets that are much smaller in size than the original dataset.
 
 1. byYearEvent: is a dataset that contains a summary of the events, fatalities, injuries, economic losses in property and crops in millions of US$. TO-DO: convert dates to year.
@@ -624,7 +633,7 @@ ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-28-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
 
 
 ```r
@@ -632,7 +641,7 @@ ggplot(byYearSummary, aes(x = year, y = fatalities)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-30-1.png)<!-- -->
 
 
 ```r
@@ -640,7 +649,7 @@ ggplot(byYearSummary, aes(x = year, y = injuries)) +
   geom_point()
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-30-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-31-1.png)<!-- -->
 
 
 
