@@ -43,11 +43,11 @@ project.R
 ```
 
 ```
-[1] "C:/Users/msfz751/Desktop/git.projects/RR-PeerAsmnt2-NOAA_Storm"
+[1] "/home/superuser/git.projects/RR-PeerAsmnt2-NOAA_Storm"
 Setting up the project folders:
-[1] "C:/Users/msfz751/Desktop/git.projects/RR-PeerAsmnt2-NOAA_Storm/data"
-[1] "C:/Users/msfz751/Desktop/git.projects/RR-PeerAsmnt2-NOAA_Storm/inst/extdata"
-[1] "C:/Users/msfz751/Desktop/git.projects/RR-PeerAsmnt2-NOAA_Storm/R"
+[1] "/home/superuser/git.projects/RR-PeerAsmnt2-NOAA_Storm/data"
+[1] "/home/superuser/git.projects/RR-PeerAsmnt2-NOAA_Storm/inst/extdata"
+[1] "/home/superuser/git.projects/RR-PeerAsmnt2-NOAA_Storm/R"
 ```
 
 ### Downloading the data
@@ -101,14 +101,13 @@ stormdata.raw <- read.csv(dataFile)
 # properties of the dataset
 dims <- dim(stormdata.raw)
 dims
-# There are `r dims[1]` observations and `r dims[2]` variables.
 ```
 
 ```
 [1] 902297     37
 ```
 
-
+There are 902297 observations and 37 variables.
 
 The names of the variables are:
 
@@ -227,10 +226,10 @@ summary(stormdata.raw)
                                                :287433   Min.   :     1  
                                                : 24013   1st Qu.:225575  
  Trees down.\n                                 :  1110   Median :451149  
- Several trees were blown down.\n              :   569   Mean   :451149  
+ Several trees were blown down.\n              :   568   Mean   :451149  
  Trees were downed.\n                          :   446   3rd Qu.:676723  
  Large trees and power lines were blown down.\n:   432   Max.   :902297  
- (Other)                                       :588294                   
+ (Other)                                       :588295                   
 ```
 
 ### What variables do we keep for our analysis?
@@ -273,24 +272,26 @@ range(unique(stormdata$REFNUM))
 
 
 ```r
-head(stormdata)
+as_data_frame(stormdata)
 ```
 
 ```
-  REFNUM           BGN_DATE STATE COUNTY COUNTYNAME  EVTYPE FATALITIES
-1      1  4/18/1950 0:00:00    AL     97     MOBILE TORNADO          0
-2      2  4/18/1950 0:00:00    AL      3    BALDWIN TORNADO          0
-3      3  2/20/1951 0:00:00    AL     57    FAYETTE TORNADO          0
-4      4   6/8/1951 0:00:00    AL     89    MADISON TORNADO          0
-5      5 11/15/1951 0:00:00    AL     43    CULLMAN TORNADO          0
-6      6 11/15/1951 0:00:00    AL     77 LAUDERDALE TORNADO          0
-  INJURIES PROPDMG PROPDMGEXP CROPDMG CROPDMGEXP REMARKS
-1       15    25.0          K       0                   
-2        0     2.5          K       0                   
-3        2    25.0          K       0                   
-4        2     2.5          K       0                   
-5        2     2.5          K       0                   
-6        6     2.5          K       0                   
+# A tibble: 902,297 × 13
+   REFNUM           BGN_DATE  STATE COUNTY COUNTYNAME  EVTYPE FATALITIES
+    <dbl>             <fctr> <fctr>  <dbl>     <fctr>  <fctr>      <dbl>
+1       1  4/18/1950 0:00:00     AL     97     MOBILE TORNADO          0
+2       2  4/18/1950 0:00:00     AL      3    BALDWIN TORNADO          0
+3       3  2/20/1951 0:00:00     AL     57    FAYETTE TORNADO          0
+4       4   6/8/1951 0:00:00     AL     89    MADISON TORNADO          0
+5       5 11/15/1951 0:00:00     AL     43    CULLMAN TORNADO          0
+6       6 11/15/1951 0:00:00     AL     77 LAUDERDALE TORNADO          0
+7       7 11/16/1951 0:00:00     AL      9     BLOUNT TORNADO          0
+8       8  1/22/1952 0:00:00     AL    123 TALLAPOOSA TORNADO          0
+9       9  2/13/1952 0:00:00     AL    125 TUSCALOOSA TORNADO          1
+10     10  2/13/1952 0:00:00     AL     57    FAYETTE TORNADO          0
+# ... with 902,287 more rows, and 6 more variables: INJURIES <dbl>,
+#   PROPDMG <dbl>, PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>,
+#   REMARKS <fctr>
 ```
 
 ### Clean up the dataset
@@ -343,7 +344,7 @@ head(unique(stormdata$EVTYPE), 10)
  [5] SNOW                      ICE STORM/FLASH FLOOD    
  [7] SNOW/ICE                  WINTER STORM             
  [9] HURRICANE OPAL/HIGH WINDS THUNDERSTORM WINDS       
-985 Levels:    HIGH SURF ADVISORY  COASTAL FLOOD ... WND
+985 Levels: ? ABNORMALLY DRY ABNORMALLY WET ... WND
 ```
 
 There are 985 different type of events.
@@ -655,18 +656,18 @@ byYearEvent
 Source: local data frame [83,144 x 6]
 Groups: BGN_DATE [?]
 
-           BGN_DATE     EVTYPE fatalities injuries propdmg.M cropdmg.M
-             <fctr>     <fctr>      <dbl>    <dbl>     <dbl>     <dbl>
-1  1/1/1966 0:00:00  TSTM WIND          0        0   0.00000         0
-2  1/1/1972 0:00:00    TORNADO          0        0   0.02500         0
-3  1/1/1979 0:00:00    TORNADO          0        0   0.00025         0
-4  1/1/1982 0:00:00       HAIL          0        0   0.00000         0
-5  1/1/1985 0:00:00  TSTM WIND          0        0   0.00000         0
-6  1/1/1990 0:00:00  TSTM WIND          0        0   0.00000         0
-7  1/1/1993 0:00:00  AVALANCHE          0        0   0.00000         0
-8  1/1/1993 0:00:00      FLOOD          0        0   5.00000         0
-9  1/1/1993 0:00:00   FLOODING          0        0   0.00500         0
-10 1/1/1993 0:00:00 HEAVY SNOW          0        0   0.00000         0
+             BGN_DATE    EVTYPE fatalities injuries propdmg.M cropdmg.M
+               <fctr>    <fctr>      <dbl>    <dbl>     <dbl>     <dbl>
+1  10/10/1954 0:00:00   TORNADO          0        0    0.0250         0
+2  10/10/1958 0:00:00   TORNADO          2        7    0.2500         0
+3  10/10/1958 0:00:00 TSTM WIND          0        0    0.0000         0
+4  10/10/1959 0:00:00      HAIL          0        0    0.0000         0
+5  10/10/1959 0:00:00   TORNADO          0        0    0.2750         0
+6  10/10/1959 0:00:00 TSTM WIND          0        0    0.0000         0
+7  10/10/1960 0:00:00      HAIL          0        0    0.0000         0
+8  10/10/1961 0:00:00   TORNADO          0        0    0.0025         0
+9  10/10/1962 0:00:00      HAIL          0        0    0.0000         0
+10 10/10/1962 0:00:00   TORNADO          0        0    0.0250         0
 # ... with 83,134 more rows
 ```
 

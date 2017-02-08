@@ -101,8 +101,8 @@ names(stormdata.raw)
 
 
 ```{r}
-#str(stormdata.raw)
-summary(stormdata.raw)
+# str(stormdata.raw)
+# summary(stormdata.raw)
 ```
 
 ### What variables do we keep for our analysis?
@@ -123,26 +123,29 @@ rm(stormdata.raw)     # release big dataset
 If we save this data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the remarks, the new dataset shrinks to only 4.6 megabytes.
 
 
+We have an observation ID with the variable `REFNUM`. We check if all its values are unique:
 
-```{r}
+```{r results='hold'}
 # REFNUM is the record id of the observation and is unique.
 length(unique(stormdata$REFNUM))
 range(unique(stormdata$REFNUM))
 ```
 
+This is a view of the data frame that we will use in our analysis.
 ```{r}
 as_data_frame(stormdata)
 ```
 
 ### Clean up the dataset
+We will transform the variable `BGN_DATE` from a factor to a date variable. We will later use it for our summaries. We will also take out some variables that are not relevant to our study.
 
 ```{r}
-
-
-stormdata.small <- stormdata %>%
-    select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
-  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%
-  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
+stormdata.small <- stormdata %>% 
+  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, # take out
+           FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
+  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%    # convert to date
+  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE,     # reorder
+         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
 
 as_data_frame(stormdata.small)
 ```
