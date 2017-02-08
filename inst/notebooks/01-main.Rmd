@@ -1,6 +1,8 @@
 ---
 title: "main"
-output: html_notebook
+output:
+  html_document: default
+  html_notebook: default
 ---
 
 ```{r setup, include=FALSE, error=TRUE, message=FALSE}
@@ -18,7 +20,10 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA, error = TRUE)
 
 ## Data Processing
 
-```{r}
+```{r message = FALSE}
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
 library(rprojroot)
 library(R.utils)
 
@@ -27,7 +32,7 @@ root_file <- root$make_fix_file()
 # root$find_file("REAME.md")
 root_file()
 ```
-
+### Set up project folders with `rprojroot`
 ```{r results='hold'}
 cat("Setting up the project folders:\n")
 project.data <- root_file("data")
@@ -48,7 +53,7 @@ downloadZip <- function(fileUrl, outDir="./data", bzip2 = FALSE) {
     unzip(temp, exdir = outDir)
   }
   else {
-    
+
     destfile <- paste(outDir, "dataset.csv", sep = "/")
     bunzip2(temp, destname = destfile, overwrite = TRUE)
   }
@@ -64,6 +69,73 @@ outDir <- project.extdata             # folder for raw data
 downloadZip(fileUrl, outDir = outDir, bzip2 = TRUE)   # download and unpack zip file
 ```
 
+
+```{r cache=TRUE}
+# read the CSV file to memory
+dataFile <- paste(project.extdata, "dataset.csv", sep = "/")
+stormdata.raw <- read.csv(dataFile)
+stormdata <- stormdata.raw
+```
+
+```{r results='hold'}
+# properties of the dataset
+dim(stormdata.raw)
+names(stormdata.raw)
+str(stormdata.raw)
+summary(stormdata.raw)
+head(stormdata.raw)
+```
+
+### Event Types `EVTYPE`
+
+```{r}
+head(unique(stormdata.raw$EVTYPE), 10)
+```
+
+There are `r length(unique(stormdata.raw$EVTYPE))` different type of events.
+
+We want to find which type of events is more harmful to population health. We could group by EVTYPE and showing the variables FATALITIES and INJURIES.
+
+
+```{r}
+byEvent.0 <- stormdata %>%
+  select(EVTYPE, FATALITIES, INJURIES) %>%
+  group_by(EVTYPE) %>%
+  summarize(fatal.sum = sum(FATALITIES), injur.sum = sum(INJURIES)) %>%
+  arrange(desc(fatal.sum), desc(injur.sum))
+
+byEvent.0
+```
+
+```{r}
+byEvent.1 <- stormdata %>%
+  select(EVTYPE, FATALITIES, INJURIES) %>%
+  group_by(EVTYPE) %>%
+  summarize(injur.sum = sum(INJURIES), fatal.sum = sum(FATALITIES)) %>%
+  arrange(desc(injur.sum), desc(fatal.sum))
+
+byEvent.1
+```
+
+
+```{r fig.asp=1}
+
+byEvent.005 <- byEvent.0[1:5, ]
+
+p1 <- ggplot(byEvent.005, aes(x = EVTYPE, y = fatal.sum)) +
+  geom_bar(stat = "identity") +
+  xlab("Event Type") + ylab("Fatalities") +
+  geom_text(aes(label=fatal.sum, vjust = -0.25))
+
+p2 <- ggplot(byEvent.005, aes(EVTYPE, injur.sum)) +
+  geom_bar(stat = "identity") +
+  xlab("Event Type") + ylab("Injuries") +
+  geom_text(aes(label=injur.sum, vjust = -0.25))
+
+gridExtra::grid.arrange(p1, p2)
+```
+
+Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
 
 
 ## Results
