@@ -294,7 +294,7 @@ unknown <- stormdata %>%
 There are `r dim(unknown)[1]` observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
 
 
-### Preparing the data for the 2nd question
+### Preparing the data for other questions
 We save few datasets that are much smaller in size than the original dataset.
 
 1. byYearEvent: is a dataset that contains a summary of the events, fatalities, injuries, economic losses in property and crops in millions of US$. TO-DO: convert dates to year.
