@@ -20,20 +20,13 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA, error = TRUE)
 
 ## Data Processing
 
-```{r message = FALSE}
-library(dplyr)
-library(ggplot2)
-library(gridExtra)
-library(stringr)
+```{r}
 library(rprojroot)
-library(R.utils)
-
 root <- rprojroot::is_rstudio_project
 root_file <- root$make_fix_file()
 # root$find_file("REAME.md")
 root_file()
 ```
-
 ### Set up project folders with `rprojroot`
 ```{r results='hold'}
 cat("Setting up the project folders:\n")
@@ -46,7 +39,6 @@ project.extdata
 project.R
 ```
 
-
 ```{r message=FALSE, warning=FALSE}
 downloadZip <- function(fileUrl, outDir="./data", bzip2 = FALSE) {
   # function to download zipped file and unpack
@@ -56,7 +48,7 @@ downloadZip <- function(fileUrl, outDir="./data", bzip2 = FALSE) {
     unzip(temp, exdir = outDir)
   }
   else {
-
+    library(R.utils)
     destfile <- paste(outDir, "dataset.csv", sep = "/")
     bunzip2(temp, destname = destfile, overwrite = TRUE)
   }
@@ -72,14 +64,16 @@ outDir <- project.extdata             # folder for raw data
 downloadZip(fileUrl, outDir = outDir, bzip2 = TRUE)   # download and unpack zip file
 ```
 
+```{r}
+stormdata <- stormdata.raw
+```
+
 
 ```{r cache=TRUE}
 # read the CSV file to memory
 dataFile <- paste(project.extdata, "dataset.csv", sep = "/")
 stormdata.raw <- read.csv(dataFile)
-stormdata <- stormdata.raw
 ```
-
 
 ```{r results='hold'}
 # properties of the dataset
@@ -102,6 +96,8 @@ We want to find which type of events is more harmful to population health. We co
 
 
 ```{r}
+library(dplyr)
+
 byEvent.0 <- stormdata %>%
   select(EVTYPE, FATALITIES, INJURIES) %>%
   group_by(EVTYPE) %>%
@@ -121,11 +117,19 @@ byEvent.1 <- stormdata %>%
 byEvent.1
 ```
 
+```{r}
+library(ggplot2)
+byEvent.005 <- byEvent.0[1:5, ]
+ggplot(byEvent.005, aes(x = fatal.sum, y = injur.sum, col = EVTYPE)) +
+  geom_point() 
+```
+
 
 ```{r fig.asp=1}
+library(ggplot2)
+library(gridExtra)
 
 byEvent.005 <- byEvent.0[1:5, ]
-
 p1 <- ggplot(byEvent.005, aes(x = EVTYPE, y = fatal.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Fatalities") +
@@ -139,111 +143,62 @@ p2 <- ggplot(byEvent.005, aes(EVTYPE, injur.sum)) +
 gridExtra::grid.arrange(p1, p2)
 ```
 
-Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
-
-## Economic Damage
-The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`.
-
-We will start by converting the monetary damages to a consistent units. We will choose thousands.
 
 ```{r}
-byDamage <- stormdata %>%
-  select(EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
-  group_by(EVTYPE) %>%
-  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))), 
-         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP)))) %>%
-  mutate(PROPDMG.K = ifelse(PROPDMGEXP == "K", PROPDMG * 1,
-                                    ifelse(PROPDMGEXP == "M", PROPDMG * 1000,
-                                           ifelse(PROPDMGEXP == "B", PROPDMG * 1E6, 0)))) %>%
-  mutate(CROPDMG.K = ifelse(CROPDMGEXP == "K", CROPDMG * 1,
-                                    ifelse(CROPDMGEXP == "M", CROPDMG * 1000,
-                                           ifelse(CROPDMGEXP == "B", CROPDMG * 1E6, 0))))
-byDamage
+library(ggplot2)
+byEvent.005 <- byEvent.0[1:5, ]
+ggplot(byEvent.005, aes(x = fatal.sum, y = injur.sum)) +
+  geom_point() +
+  #scale_y_log10() +
+  facet_wrap(~EVTYPE)
+
 ```
 
 
 ```{r}
-
-byDamage.m <- byDamage %>%
-  
-  summarize(propdmg.k = sum(PROPDMG.K), cropdmg.k = sum(CROPDMG.K)) %>%
-  mutate(propdmg.m = propdmg.k / 1000, cropdmg.m = cropdmg.k / 1000) %>%
-  select(EVTYPE, propdmg.m, cropdmg.m) %>%
-  mutate(totaldmg.m = propdmg.m + cropdmg.m) %>%
-  # arrange(desc(propdmg.m), desc(cropdmg.m))
-  arrange(desc(totaldmg.m))
-
-byDamage.m
+byEvent.005
 ```
 
 ```{r}
-byDamage.m.top5 <- byDamage.m[1:5, ]
-byDamage.m.top5
+library(tidyr)
 
-byDamage.m.top10 <- byDamage.m[1:10, ]
-byDamage.m.top10
+byEvent.tidy <- byEvent.005 %>%
+  gather(key, value, -EVTYPE) %>%
+  separate(key, c("Kind", "Measure"), "\\.")
 ```
 
 ```{r}
-ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
+byEvent.tidy
+```
+
+
+```{r}
+library(ggplot2)
+
+ggplot(byEvent.tidy, aes(x = EVTYPE, y = value)) +
+  geom_jitter() +
+  #facet_grid(Kind ~.)
+  scale_y_log10() +
+  facet_grid(.~ Kind)
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(byEvent.tidy, aes(EVTYPE, value)) +
+  geom_bar(stat = "identity") #+ 
+  #geom_jitter() +
+  #facet_grid(Kind ~.)
+  #scale_y_log10() +
+  #scale_y_continuous("value") +
+  #facet_grid(.~ Kind)
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(byEvent.tidy, aes(EVTYPE, value, col = Kind)) +
   geom_bar(stat = "identity")
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```{r}
-unique(byDamage$PROPDMGEXP)
-```
-
-```{r}
-unique(byDamage$CROPDMGEXP)
-```
-
-```{r}
-summary(byDamage)
-str(byDamage)
-```
-
-There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
-There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. Besides the identifiers `B`, `M` and `K`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts.
-
-
-```{r}
-unknown <- stormdata %>%
-  select(STATE, COUNTY, EVTYPE, PROPDMG, PROPDMGEXP, REMARKS) %>%
-  filter(!PROPDMGEXP %in% c("K", "M", "B"))
-```
-
-
-```{r}
-byDamage <- stormdata %>%
-  select(EVTYPE, PROPDMG, CROPDMG) %>%
-  group_by(EVTYPE) %>%
-  summarize(property.total = sum(PROPDMG), crop.total = sum(CROPDMG)) %>%
-  arrange(desc(property.total), desc(crop.total))
-
-byDamage
-
 ```
 
 
