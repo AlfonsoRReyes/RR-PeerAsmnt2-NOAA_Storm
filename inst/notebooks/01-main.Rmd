@@ -1,5 +1,5 @@
 ---
-title: "main"
+title: "Analysis of weather impact on people and the economy"
 author: "Alfonso R. Reyes"
 output:
   html_document:
