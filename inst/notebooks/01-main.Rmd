@@ -18,6 +18,8 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA, error = TRUE)
 2. Across the United States, which types of events have the greatest economic consequences?
 
 ## Synopsis
+<ten sentences>
+
 
 
 ## Data Processing
@@ -361,20 +363,25 @@ byYearSummary <- byYearEvent %>%
 byYearSummary
 ```
 
-```{r}
-ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
-  geom_point()
+```{r fig.asp=1}
+q1 <- ggplot(byYearSummary, aes(x = year, y = damage.mm)) +
+  geom_point() + 
+  ggtitle("Weather impact on the economy 1950-2011") + 
+  labs(y = "MM US$")
+q2 <- ggplot(byYearSummary, aes(x = year, y = fatalities)) +
+  geom_point() +
+  ggtitle("Weather impact on human life, 1950-2011") +
+  labs(y = "Fatalities")
+
+q3 <- ggplot(byYearSummary, aes(x = year, y = injuries)) +
+  geom_point() +
+  ggtitle("Weather impact on health, 1950-2011") +
+  labs(y = "Injured")
+  
+
+gridExtra::grid.arrange(q1, q2, q3)
 ```
 
-```{r}
-ggplot(byYearSummary, aes(x = year, y = fatalities)) +
-  geom_point()
-```
-
-```{r}
-ggplot(byYearSummary, aes(x = year, y = injuries)) +
-  geom_point()
-```
 
 
 ```{r}
@@ -383,6 +390,7 @@ save(byYearSummary, file = paste(project.data, "byYearSummary.rda", sep = "/"))
 ```
 
 ## Results
+<present the results here>
 
 ## Figures
 Maximum: 03. Can use panels.
