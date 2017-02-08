@@ -3,3 +3,5 @@
 .RData
 .Ruserdata
 *.html
+
+inst/notebooks/01-main_cache/html/
