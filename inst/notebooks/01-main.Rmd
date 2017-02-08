@@ -211,6 +211,11 @@ ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
 
 
 
+
+
+
+
+
 ```{r}
 unique(byDamage$PROPDMGEXP)
 ```
@@ -221,7 +226,7 @@ unique(byDamage$CROPDMGEXP)
 
 ```{r}
 summary(byDamage)
-str(byDamage)
+
 ```
 
 There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
@@ -232,19 +237,10 @@ There is no a reasonable way to determine the units or damage value from the rem
 unknown <- stormdata %>%
   select(STATE, COUNTY, EVTYPE, PROPDMG, PROPDMGEXP, REMARKS) %>%
   filter(!PROPDMGEXP %in% c("K", "M", "B"))
+
+head(unknown)
 ```
 
-
-```{r}
-byDamage <- stormdata %>%
-  select(EVTYPE, PROPDMG, CROPDMG) %>%
-  group_by(EVTYPE) %>%
-  summarize(property.total = sum(PROPDMG), crop.total = sum(CROPDMG)) %>%
-  arrange(desc(property.total), desc(crop.total))
-
-byDamage
-
-```
 
 
 ## Results
