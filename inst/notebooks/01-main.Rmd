@@ -1,5 +1,6 @@
 ---
 title: "main"
+author: "Alfonso R. Reyes"
 output:
   html_document:
     keep_md: yes
@@ -97,6 +98,10 @@ There are `r dims[1]` observations and `r dims[2]` variables.
 The names of the variables are:
 ```{r}
 names(stormdata.raw)
+```
+
+```{r}
+as_data_frame(stormdata.raw)
 ```
 
 
