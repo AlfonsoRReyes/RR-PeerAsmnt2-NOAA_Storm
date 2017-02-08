@@ -82,7 +82,7 @@ downloadZip(fileUrl, outDir = outDir, bzip2 = TRUE)   # download and unpack file
 # read the CSV file to memory
 dataFile <- paste(project.extdata, "dataset.csv", sep = "/")
 stormdata.raw <- read.csv(dataFile)
-stormdata <- stormdata.raw          # for the moment we will use a shorter name
+# stormdata <- stormdata.raw          # for the moment we will use a shorter name
 ```
 
 
@@ -108,16 +108,43 @@ summary(stormdata.raw)
 
 These are the variable that we consider important for the analysis:
 
-REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS
+        REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
+        FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS
+
+
 ```{r}
 stormdata <- stormdata.raw %>%
-select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
-
+  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
 ```
+
+If we save this data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the remarks, the new dataset shrinks to only 4.6 megabytes.
+
 
 
 ```{r}
-head(stormdata.raw)
+# REFNUM is the record id of the observation and is unique.
+length(unique(stormdata$REFNUM))
+range(unique(stormdata$REFNUM))
+```
+
+```{r}
+head(stormdata)
+```
+
+### Clean up the dataset
+
+```{r}
+stormdata.small <- stormdata %>%
+    select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
+  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%
+  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
+
+stormdata.small
+```
+
+```{r}
+# save unique events by year
+save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
 ```
 
 ### Event Types `EVTYPE`
@@ -222,27 +249,6 @@ byDamage.m.top10
 ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
   geom_bar(stat = "identity")
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
