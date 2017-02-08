@@ -24,6 +24,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA, error = TRUE)
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
+library(stringr)
 library(rprojroot)
 library(R.utils)
 
@@ -147,16 +148,65 @@ We will start by converting the monetary damages to a consistent units. We will 
 byDamage <- stormdata %>%
   select(EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
   group_by(EVTYPE) %>%
-  mutate(PROPDMGEXP = as.factor(toupper(PROPDMGEXP)), 
-         CROPDMGEXP = as.factor(toupper(CROPDMGEXP))) %>%
-  mutate(PROPDMG.thousands = ifelse(PROPDMGEXP == "K", PROPDMG * 1,
+  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))), 
+         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP)))) %>%
+  mutate(PROPDMG.K = ifelse(PROPDMGEXP == "K", PROPDMG * 1,
                                     ifelse(PROPDMGEXP == "M", PROPDMG * 1000,
                                            ifelse(PROPDMGEXP == "B", PROPDMG * 1E6, 0)))) %>%
-  mutate(CROPDMG.thousands = ifelse(CROPDMGEXP == "K", CROPDMG * 1,
+  mutate(CROPDMG.K = ifelse(CROPDMGEXP == "K", CROPDMG * 1,
                                     ifelse(CROPDMGEXP == "M", CROPDMG * 1000,
                                            ifelse(CROPDMGEXP == "B", CROPDMG * 1E6, 0))))
 byDamage
 ```
+
+```{r}
+
+byDamage.m <- byDamage %>%
+  
+  summarize(propdmg.k = sum(PROPDMG.K), cropdmg.k = sum(CROPDMG.K)) %>%
+  mutate(propdmg.m = propdmg.k / 1000, cropdmg.m = cropdmg.k / 1000) %>%
+  select(EVTYPE, propdmg.m, cropdmg.m) %>%
+  mutate(totaldmg.m = propdmg.m + cropdmg.m) %>%
+  # arrange(desc(propdmg.m), desc(cropdmg.m))
+  arrange(desc(totaldmg.m))
+
+byDamage.m
+```
+
+```{r}
+byDamage.m.top5 <- byDamage.m[1:5, ]
+byDamage.m.top5
+
+byDamage.m.top10 <- byDamage.m[1:10, ]
+byDamage.m.top10
+```
+
+```{r}
+ggplot(byDamage.m.top5, aes(EVTYPE, totaldmg.m)) +
+  geom_bar(stat = "identity")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r}
 unique(byDamage$PROPDMGEXP)
@@ -175,11 +225,10 @@ There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
 There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. Besides the identifiers `B`, `M` and `K`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts.
 
 
-
 ```{r}
 unknown <- stormdata %>%
   select(STATE, COUNTY, EVTYPE, PROPDMG, PROPDMGEXP, REMARKS) %>%
-  filter(PROPDMGEXP == "7")
+  filter(!PROPDMGEXP %in% c("K", "M", "B"))
 ```
 
 
