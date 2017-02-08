@@ -11,6 +11,8 @@ output: html_notebook
 
 ```{r}
 library(rprojroot)
+library(R.utils)
+
 root <- rprojroot::is_rstudio_project
 root_file <- root$make_fix_file()
 # root$find_file("REAME.md")
@@ -37,7 +39,7 @@ downloadZip <- function(fileUrl, outDir="./data", bzip2 = FALSE) {
     unzip(temp, exdir = outDir)
   }
   else {
-    library(R.utils)
+    
     destfile <- paste(outDir, "dataset.csv", sep = "/")
     bunzip2(temp, destname = destfile, overwrite = TRUE)
   }
