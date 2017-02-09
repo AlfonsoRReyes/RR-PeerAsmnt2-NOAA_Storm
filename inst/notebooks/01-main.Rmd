@@ -138,10 +138,53 @@ These are the variable that we consider important for the analysis:
 
 ```{r}
 stormdata <- stormdata.raw %>%
-  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
-
-rm(stormdata.raw)     # release big dataset
+  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
+         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS) %>%
+  # convert BGN_DATE to date format
+  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%    # convert to date
+  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
+         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS) %>%
+  # convert *EXP to uppercase and remove trailing spaces
+  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))),      # clean the string
+         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP))))
+  
+# rm(stormdata.raw)     # release big dataset
+save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
+
+```{r}
+# floods in California from Xmas 2005 to around New Year 2006
+# one record improperly entered as Billions instead of millions REFNUM=605943
+stormdata %>%
+  filter(DATE >= "2005-12-25" & DATE <= "2006-01-02" & STATE == "CA" & PROPDMG > 0) %>%
+  arrange(DATE) %>%
+  select(REFNUM, DATE, STATE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
+```
+
+
+Event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the 300 million dollars range. See paper USGS _____.
+
+
+
+```{r}
+# write.csv(stormdata, file = paste(project.data, "stormdata.csv", sep = "/"))   # file too big > 350MB
+```
+
+
+```{r}
+str(stormdata)
+```
+
+
+```{r}
+str(stormdata)
+```
+
+```{r}
+# what are the states in the variable
+unique(stormdata$STATE)
+```
+
 
 To save memory we release now the 'stormdata.raw`  object.
 
