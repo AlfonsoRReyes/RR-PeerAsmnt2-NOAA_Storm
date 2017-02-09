@@ -155,8 +155,12 @@ save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```{r}
 # floods in California from Xmas 2005 to around New Year 2006
 # one record improperly entered as Billions instead of millions REFNUM=605943
+# get the observations for these floods in California where the damages are above 0
 stormdata %>%
-  filter(DATE >= "2005-12-25" & DATE <= "2006-01-02" & STATE == "CA" & PROPDMG > 0) %>%
+  filter(DATE >= "2005-12-25" & 
+           DATE <= "2006-01-02" & 
+           STATE == "CA" & 
+           PROPDMG > 0) %>%
   arrange(DATE) %>%
   select(REFNUM, DATE, STATE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
 ```
