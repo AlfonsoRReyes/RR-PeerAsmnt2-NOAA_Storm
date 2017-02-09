@@ -173,6 +173,8 @@ stormdata.small <- stormdata %>%
 as_data_frame(stormdata.small)
 ```
 
+## Other questions
+### what is the worst weather event in 2005?
 ```{r}
 # what is the worst weather event in 2005?
 worst <- stormdata.small %>%
@@ -271,23 +273,34 @@ We will start by converting the monetary damages to a consistent units. We will 
 byDamage <- stormdata %>%
   select(EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
   group_by(EVTYPE) %>%
-  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))), 
+  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))),      # clean the string
          CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP)))) %>%
   mutate(PROPDMG.K = ifelse(PROPDMGEXP == "K", PROPDMG * 1,
-                                    ifelse(PROPDMGEXP == "M", PROPDMG * 1000,
-                                           ifelse(PROPDMGEXP == "B", PROPDMG * 1E6, 0)))) %>%
+                     ifelse(PROPDMGEXP == "M", PROPDMG * 1000,
+                     ifelse(PROPDMGEXP == "B", PROPDMG * 1E6, 0)))) %>%
   mutate(CROPDMG.K = ifelse(CROPDMGEXP == "K", CROPDMG * 1,
-                                    ifelse(CROPDMGEXP == "M", CROPDMG * 1000,
-                                           ifelse(CROPDMGEXP == "B", CROPDMG * 1E6, 0))))
+                     ifelse(CROPDMGEXP == "M", CROPDMG * 1000,
+                     ifelse(CROPDMGEXP == "B", CROPDMG * 1E6, 0))))
 byDamage
 ```
 
 We convert the thousands to millions of US$ and only one variable, the total economic damage.
 
 ```{r}
+byDamage.million <- byDamage %>%
+  select(EVTYPE, PROPDMG.K, CROPDMG.K) %>%
+  mutate(propdmg.m = PROPDMG.K /1000, cropdmg.m = CROPDMG.K / 1000) %>%
+  summarize(propdmg = sum(propdmg.m), cropdmg = sum(cropdmg.m)) %>%
+  mutate(damage.total = propdmg + cropdmg) %>%
+  arrange(desc(damage.total))
+
+byDamage.million
+```
+
+
+```{r}
 
 byDamage.mm <- byDamage %>%
-  
   summarize(propdmg.k = sum(PROPDMG.K), cropdmg.k = sum(CROPDMG.K)) %>%
   mutate(propdmg.m = propdmg.k / 1000, cropdmg.m = cropdmg.k / 1000) %>%
   select(EVTYPE, propdmg.m, cropdmg.m) %>%
@@ -407,7 +420,7 @@ save(byYearEvent, file = paste(project.data, "byYearEvent.rda", sep = "/"))
 ### Have the number of fatalities and injuries increased over the years?
 
 ```{r}
-load(paste(project.data, "byYearEvent.rda", sep = "/"))  # load the data
+#load(paste(project.data, "byYearEvent.rda", sep = "/"))  # load the data
 
 byYearSummary <- byYearEvent %>%
   mutate(year = year(mdy_hms(as.character(BGN_DATE)))) %>%
@@ -415,11 +428,14 @@ byYearSummary <- byYearEvent %>%
   summarize(fatalities = sum(fatalities), 
             injuries = sum(injuries),
             damage.mm = sum(propdmg.M) + sum(cropdmg.M),
-            damage.bb = damage.mm / 1000
-            )
+            damage.bb = damage.mm / 1000) %>%
+  arrange(desc(damage.bb))
 
 byYearSummary
 ```
+
+There are two years with the most economic damage: 2006 and 2005.
+
 
 ```{r fig.asp=1}
 q1 <- ggplot(byYearSummary, aes(x = year, y = damage.bb)) +
