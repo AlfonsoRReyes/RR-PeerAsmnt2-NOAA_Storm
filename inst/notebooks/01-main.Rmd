@@ -94,6 +94,7 @@ downloadZip <- function(fileUrl, outDir="./data", bzip2 = FALSE) {
 
 
 ```{r cache=TRUE}
+# TO-DO: skip downloading if the CSV already exists
 # URL of the dataset file
 fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
 cat("Unpacking the raw data file:\n")
@@ -129,7 +130,6 @@ as_data_frame(stormdata.raw)
 
 
 ### What variables do we keep for our analysis?
-
 These are the variable that we consider important for the analysis:
 
         REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
@@ -152,11 +152,16 @@ stormdata <- stormdata.raw %>%
 save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
+
 ```{r}
 # floods in California from Xmas 2005 to around New Year 2006
 # one record improperly entered as Billions instead of millions REFNUM=605943
+# get the observations for these floods in California where the damages are above 0
 stormdata %>%
-  filter(DATE >= "2005-12-25" & DATE <= "2006-01-02" & STATE == "CA" & PROPDMG > 0) %>%
+  filter(DATE >= "2005-12-25" & 
+           DATE <= "2006-01-02" & 
+           STATE == "CA" & 
+           PROPDMG > 0) %>%
   arrange(DATE) %>%
   select(REFNUM, DATE, STATE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
 ```
@@ -165,20 +170,6 @@ stormdata %>%
 Event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the 300 million dollars range. See paper USGS _____.
 
 
-
-```{r}
-# write.csv(stormdata, file = paste(project.data, "stormdata.csv", sep = "/"))   # file too big > 350MB
-```
-
-
-```{r}
-str(stormdata)
-```
-
-
-```{r}
-str(stormdata)
-```
 
 ```{r}
 # what are the states in the variable
