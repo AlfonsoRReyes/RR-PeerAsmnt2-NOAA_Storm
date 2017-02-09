@@ -94,6 +94,7 @@ downloadZip <- function(fileUrl, outDir="./data", bzip2 = FALSE) {
 
 
 ```{r cache=TRUE}
+# TO-DO: skip downloading if the CSV already exists
 # URL of the dataset file
 fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
 cat("Unpacking the raw data file:\n")
@@ -129,7 +130,6 @@ as_data_frame(stormdata.raw)
 
 
 ### What variables do we keep for our analysis?
-
 These are the variable that we consider important for the analysis:
 
         REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
@@ -151,6 +151,7 @@ stormdata <- stormdata.raw %>%
 # rm(stormdata.raw)     # release big dataset
 save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
+
 
 ```{r}
 # floods in California from Xmas 2005 to around New Year 2006
