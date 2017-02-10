@@ -146,10 +146,15 @@ stormdata <- stormdata.raw %>%
          FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS) %>%
   # convert *EXP to uppercase and remove trailing spaces
   mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))),      # clean the string
-         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP))))
+         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP)))) %>%
+  mutate(REMARKS = as.character(REMARKS))
   
 # rm(stormdata.raw)     # release big dataset
 save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
+```
+
+```{r}
+str(stormdata)
 ```
 
 There is a typo in one of the observations in the California flood 2005/2006. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted around 2006 New Year.
@@ -182,8 +187,21 @@ stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")]
 
 
 ```{r}
-stormdata[stormdata$REFNUM==605943, c("REMARKS")]
+remarks.605943 <- stormdata[stormdata$REFNUM==605943, c("REMARKS")]
+remarks.605943
 ```
+
+```{r}
+text <- "Major flooding continued into the early hours of January 1st, before the Napa River finally fell below flood stage and the water receeded. Flooding was severe in Downtown Napa from the Napa Creek and the City and Parks Department was hit with $6 million in damage alone. The City of Napa had 600 homes with moderate damage, 150 damaged businesses with costs of at least $70 million."
+
+remarks.605943 <- paste("Correct typo in property damage from 'B' (biilion) to 'M' (million).", remarks.605943, sep = "|")
+remarks.605943
+```
+
+```{r}
+stormdata[stormdata$REFNUM==605943, c("REMARKS")] <- remarks.605943
+```
+
 
 ```{r}
 # write.csv(stormdata, file = paste(project.data, "stormdata.csv", sep = "/"))   # file too big > 350MB
