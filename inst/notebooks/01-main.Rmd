@@ -181,6 +181,9 @@ stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")]
 ```
 
 
+```{r}
+stormdata[stormdata$REFNUM==605943, c("REMARKS")]
+```
 
 ```{r}
 # write.csv(stormdata, file = paste(project.data, "stormdata.csv", sep = "/"))   # file too big > 350MB
