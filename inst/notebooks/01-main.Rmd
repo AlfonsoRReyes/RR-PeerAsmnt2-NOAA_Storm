@@ -480,7 +480,7 @@ byYearSummary <- byYearEvent %>%
   group_by(year) %>%                      # group by year
   summarize(fatalities = sum(fatalities), # calculate total fatalities and injuries
             injuries = sum(injuries),
-            damage.mm = round(sum(propdmg.M) + sum(cropdmg.M), 0),  # total damage in millions
+            damage.mm = round(sum(propdmg.M) + sum(cropdmg.M), 0), # total in millions
             damage.bb = round(damage.mm / 1000, 2)) %>%       # total damage in billions
   arrange(desc(damage.bb))
 
