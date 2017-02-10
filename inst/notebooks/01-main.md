@@ -662,18 +662,21 @@ load(paste(project.data, "byYearSummary.rda", sep = "/"))
 
 q1 <- ggplot(byYearSummary, aes(x = year, y = damage.bb)) +
   geom_point() + 
+  geom_smooth() +
   ggtitle("Impact on economy 1950-2011") + 
   labs(y = "Billions US$") +
   theme(plot.title = element_text(hjust=0.5))
 
 q2 <- ggplot(byYearSummary, aes(x = year, y = fatalities)) +
   geom_point() +
+  geom_smooth() +
   ggtitle("impact on human life, 1950-2011") +
   labs(y = "Fatalities") +
     theme(plot.title = element_text(hjust=0.5))
 
 q3 <- ggplot(byYearSummary, aes(x = year, y = injuries)) +
   geom_point() +
+  geom_smooth() +
   ggtitle("impact on health, 1950-2011") +
   labs(y = "Injured") +
     theme(plot.title = element_text(hjust=0.5))
