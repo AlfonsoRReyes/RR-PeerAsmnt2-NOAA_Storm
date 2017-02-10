@@ -239,7 +239,7 @@ worst <- stormdata.small %>%
   select(REFNUM, DATE, STATE, EVTYPE, PROPDMG, PROPDMGEXP) %>%
   arrange(desc(PROPDMG))
 
-worst
+as_data_frame(worst)
 ```
 
 Show some events with doubtful monetary units.
@@ -247,7 +247,7 @@ Show some events with doubtful monetary units.
 events <- stormdata %>%
   select(REFNUM, DATE, EVTYPE, REMARKS) %>%
   filter(REFNUM %in% c(605943, 577616, 577615, 581535))
-events
+as_data_frame(events)
 ```
 
 
