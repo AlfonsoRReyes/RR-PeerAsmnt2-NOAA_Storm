@@ -123,6 +123,7 @@ The names of the variables are:
 names(stormdata.raw)
 ```
 
+This is how the raw data looks:
 ```{r}
 as_data_frame(stormdata.raw)
 ```
@@ -130,7 +131,7 @@ as_data_frame(stormdata.raw)
 
 ### What variables do we keep for our analysis?
 
-These are the variable that we consider important for the analysis:
+These are the variables that we consider important for the analysis:
 
         REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS
@@ -158,6 +159,7 @@ stormdata <- stormdata.raw %>%
 ```
 
 
+### IMPORTANT
 
 There is a typo in one of the observations in the California flood 2005/2006. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted around 2006 New Year.
 
@@ -210,7 +212,6 @@ as_data_frame(stormdata)
 ```
 
 
-
 ```{r}
 load(paste(project.data, "stormdata.rda", sep = "/"))  # load the data
 ```
@@ -226,18 +227,15 @@ as_data_frame(stormdata.small)
 
 
 
-
 ### Saving a portion of the dataset
-If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file.
+If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file as well.
 
 ```{r}
 # save unique events by year
 save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
 ```
 
-
-
-
+## The 1st Question
 ### Create data frames for 1st question
 We want to find now which type of events is more harmful to population health. We could group by `EVTYPE` and showing the variables FATALITIES and INJURIES.
 
@@ -263,7 +261,7 @@ byEvent.1 <- stormdata %>%
 byEvent.1
 ```
 
-     
+### Plots that address the 1st question     
 We plot now the top 5 events that cause more harm on the population:
 
 ```{r fig.asp=1}
@@ -285,6 +283,8 @@ grid.rect(gp=gpar(fill=NA))
 ```
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
+
+### The 2nd Question
 
 ## Assessing the Economic Damage
 The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`.
@@ -334,6 +334,7 @@ byDamage.mm <- byDamage %>%
 byDamage.mm
 ```
 
+### Plots for the 2nd question
 Get the top 5 and top 10 causes of economic damage.
 ```{r}
 byDamage.mm.top5 <- byDamage.mm[1:10, ]
