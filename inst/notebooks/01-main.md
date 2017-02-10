@@ -209,11 +209,9 @@ stormdata <- stormdata.raw %>%
 
 
 ### IMPORTANT
+There is a typo in one of the observations in the California flood 2005/2006 that distorts the economy impact. The typo says **billions** instead of **millions** in the flood events in Californa. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted during 2006 New Year.
 
-There is a typo in one of the observations in the California flood 2005/2006. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted around 2006 New Year.
-
-We are saving the correction in `stormdata.rda`. So, if the reader wants to reproduce the error, it wil be necessary to load the data from scratch, starting with downloading the file from the original source. The code above wll reproduce the steps necessary. To see the observation with the typo (it was writen "B" instead of "M" in the variable `PROPDMGEXP`), it corresponds to observation 605943 as identified by the variable `REFNUM`.
-
+We are saving the corrections in `stormdata.rda`. So, if the reader wants to reproduce the error, it wil be necessary to load the data from scratch, starting with downloading the file from the original source in the web. The code above wll reproduce the steps necessary. To see the observation with the typo (it was writen "B" instead of "M" in the variable `PROPDMGEXP`), it corresponds to observation 605943 as identified by the variable `REFNUM`.
 
 
 ```r
@@ -245,8 +243,9 @@ as_data_frame(ca.flood)
 ```
 
 
-Event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the 300 million dollars range. See paper USGS _____.
+The event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the hundred million dollars range. See paper USGS Open-File Report 2006–1182, which describes the phenomena and economic losses.
 
+### Making the correction from Billions to Millions
 Replace the "B" of billions by "M" (millons):
 
 ```r
@@ -258,7 +257,6 @@ stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")]
 [1] M
 Levels:  - ? + 0 1 2 3 4 5 6 7 8 B H K M
 ```
-
 
 Add a new comment on correction to the `REMARKS` variable:
 
@@ -280,15 +278,19 @@ remarks.605943 <- paste("Correct typo in property damage from 'B' (biilion) to '
 
 # impute the new remark
 stormdata[stormdata$REFNUM==605943, c("REMARKS")] <- remarks.605943
-
-# save stormdata after corrections
-save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
 
 This is a view of the data frame that we will use in our analysis.
 
 ```r
+# save stormdata after corrections
+save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
+# remove data frame from memory
+rm(stormdata)
+# load data frame
+load(paste(project.data, "stormdata.rda", sep = "/"))
+# show on screen
 as_data_frame(stormdata)
 ```
 
@@ -311,51 +313,8 @@ as_data_frame(stormdata)
 ```
 
 
+## The 1st Question. Which types of events are most harmful with respect to population health?
 
-```r
-load(paste(project.data, "stormdata.rda", sep = "/"))  # load the data
-```
-
-Create a small data frame without the `REMARKS` variable.
-
-```r
-stormdata.small <- stormdata %>% 
-  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE,     # reorder
-         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
-
-as_data_frame(stormdata.small)
-```
-
-```
-# A tibble: 902,297 × 12
-   REFNUM       DATE  STATE COUNTY COUNTYNAME  EVTYPE FATALITIES INJURIES
-    <dbl>     <dttm> <fctr>  <dbl>     <fctr>  <fctr>      <dbl>    <dbl>
-1       1 1950-04-18     AL     97     MOBILE TORNADO          0       15
-2       2 1950-04-18     AL      3    BALDWIN TORNADO          0        0
-3       3 1951-02-20     AL     57    FAYETTE TORNADO          0        2
-4       4 1951-06-08     AL     89    MADISON TORNADO          0        2
-5       5 1951-11-15     AL     43    CULLMAN TORNADO          0        2
-6       6 1951-11-15     AL     77 LAUDERDALE TORNADO          0        6
-7       7 1951-11-16     AL      9     BLOUNT TORNADO          0        1
-8       8 1952-01-22     AL    123 TALLAPOOSA TORNADO          0        0
-9       9 1952-02-13     AL    125 TUSCALOOSA TORNADO          1       14
-10     10 1952-02-13     AL     57    FAYETTE TORNADO          0        0
-# ... with 902,287 more rows, and 4 more variables: PROPDMG <dbl>,
-#   PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>
-```
-
-
-
-### Saving a portion of the dataset
-If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file as well.
-
-
-```r
-# save unique events by year
-save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
-```
-
-## The 1st Question
 ### Create data frames for 1st question
 We want to find now which type of events is more harmful to population health. We could group by `EVTYPE` and showing the variables FATALITIES and INJURIES.
 
@@ -417,6 +376,7 @@ byEvent.1
 # ... with 975 more rows
 ```
 
+
 ### Plots that address the 1st question     
 We plot now the top 5 events that cause more harm on the population:
 
@@ -443,12 +403,12 @@ gridExtra::grid.arrange(p1, p2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
 
-Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States. Even though **hurricanes/typhons** are the most detrimental to the economy, they are not the main threat to human life; it is tornados by their unpredictability. Hurricanes are pretty well forecast nowadays and are 25th as the cause in human mortality.
+Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States. 
 
 
-## The 2nd Question
+## The 2nd Question. Which types of events have the greatest economic consequences?
 
 ## Assessing the Economic Damage
 The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`. In addition, other characters are used under these variables. In the *Appendix* is explained how many more identifiers are used as a monetary identifier.
@@ -491,9 +451,6 @@ Groups: EVTYPE [985]
 
 We convert the thousands to millions of US$ and only one variable, the total economic damage.
 
-
-
-
 ```r
 byDamage.mm <- byDamage %>%
   summarize(propdmg.k = sum(PROPDMG.K), cropdmg.k = sum(CROPDMG.K)) %>%
@@ -524,6 +481,7 @@ byDamage.mm
 # ... with 975 more rows
 ```
 
+
 ### Plots for the 2nd question
 Get the top 5 and top 10 causes of economic damage.
 
@@ -551,7 +509,7 @@ byDamage.mm.top5
 
 
 ```r
-# plots for economic losses
+# plots for total economic losses
 r1 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
@@ -560,8 +518,8 @@ r1 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totald
   theme(axis.text.x = element_text(angle = 40, hjust = 1)) + 
   scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
 
+# plot for impact on property
 propdmg.bi <- byDamage.mm.top5$propdmg.m/1000
-
 r2 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
@@ -570,8 +528,8 @@ r2 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg
   theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
   scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
 
+# plot for impact on crops
 cropdmg.bi <- byDamage.mm.top5$cropdmg.m/1000
-
 r3 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
@@ -580,41 +538,42 @@ r3 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg
   theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
   scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
 
-gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)
+gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)  # 3-in-1 figure
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
 
 
 
 ## Results
-<present the results here>
-
 These are the results:
 
-1. Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
+1. Tornados, excessive heat, flash floods, heat and lightning are the weather events most harmful to human life accross the United States. In the case of injuries caused to humans, tornados, excessive heat, lightning, heat and flash floods are the events causing them in descending order.
 
-2. In the case of injuries caused to humans tornados, excessive heat, lightning, heat and flash floods are the events causing them in descending order.
+2. Even though **hurricanes/typhons** are the most detrimental to the economy, they are not the main threat to human life; it is **tornados** by their *unpredictability*. Hurricanes are pretty well forecast nowadays with help of satellite. Hurricanes are 25th cause of human mortality.
 
-3. On the economic impact, we classified the weather events from the most damaging to the economy to the less. They are: flood, hurricane/typhoon, tornados, storm surge, hail, flash flodd, drought, river flood and ice storms. The economic impact totals both, property and crops.
+3. On the economic impact, we classified the weather events from the most damaging to the economy to the less. They are: flood, hurricane/typhoon, tornados, storm surge, hail, flash flodd, drought, river flood and ice storms. The economic impact totals both, property and crops. The scale of the plots is in Billions of USD.
 
-4. Other additional findings were that the weather events have been increasing its damage to the economy and for the population in general. From the plots, we can see that from 1992 onwards, the effects have been disastrous. The losses in the economic have ascended from few millions to tens or hundreds of billions! On the population we can appreciate an increase in mortality from about a hundred in average until the end of the 80s to five hundred to fifteen hundred fatalities. 
+4. Other additional findings were that the weather events have been **significantly increasing its damage to the economy** and for the population in general. From the plots in the appendix, we can see that from 1992 onwards, the effects have been disastrous. The losses in the economic have ascended from few millions to tens or hundreds of billions! On the population we can appreciate an increase in mortality from about a hundred in average (end of the 80s) to five hundred to fifteen hundred fatalities. 
 
-5. Injuries have had less devastating effect but has not duplicated or triplicated as in the economy or mortality. Additional studies may be advisable to find the reason to the control in injuries in humans because of the weather events. We can notice some cyclical shape on the injuries accross the years but the slope is mildly ascending.
+5. Over the years, weather events have had less devastating effect on injuries on humans. Injuries have not duplicated or triplicated as in the case of the economy or loss of life. Additional studies may be advisable to find the reason to the relative control in injuries dure to the weather events. We can also notice some cyclical shape on the injuries accross the years but the slope is mildly ascending.
 
-6. There are a couple of major weather events in 2005 and 2006 where we can see a drastic impact on the economy of 100 and 125 billion dollars. One was Katrina affecting several states in the Southm, and the other was a major flood in California.
+6. There are a couple of major weather events in 2005  where we can see a drastic impact on the economy of 100 billion dollars. That was Katrina affecting several states in the South.
 
+7. Besides the identifiers `B`, `M` and `K`, in the variables `PROPDMGEXP` and `CROPDMGEXP`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts. 
+
+8. Anoher interesting thing we noticed from the plot in the appendix is that until 1979 the economy damage due to weather events was below 1 billion USD, with exception of 1973 and 1974. From then onwards it just keep increasing, peaking in Katrina in 2005 with $100 billion in property and crop damage. The average impact on the economy in the past 25 years has been averaging 25 billion USD.
 
 
 ## Appendix
 
 ### Have the number of fatalities and injuries increased over the years?
-We save few datasets that are much smaller in size than the original dataset.
+We have generated a couple of datasets that are much smaller in size than the original dataset.
 
-1. byYearEvent: is a dataset that contains a summary of the events, fatalities, injuries, economic losses in property and crops in millions of US$. TO-DO: convert dates to year.
+* byYearEvent: is a dataset that contains a summary of the events, fatalities, injuries, economic losses in property and crops in millions of US$. 
 
-2. byYearSummary: a dataset showing the year and the wather impact on life and the economy. Four variables: year, fatalities, injured and economy losses in millions of USD.
+* byYearSummary: a dataset showing the year and the wather impact on life and the economy. Four variables: year, fatalities, injured and economy losses in millions of USD.
 
 
 ```r
@@ -659,8 +618,6 @@ Groups: DATE [?]
 
 
 
-
-
 ```r
 #load(paste(project.data, "byYearEvent.rda", sep = "/"))  # load the data
 
@@ -673,6 +630,10 @@ byYearSummary <- byYearEvent %>%
             damage.bb = round(damage.mm / 1000, 2)) %>%       # total damage in billions
   arrange(desc(damage.bb))
 
+# save losses by year
+save(byYearSummary, file = paste(project.data, 
+                                 "byYearSummary.rda", 
+                                 sep = "/"))
 byYearSummary
 ```
 
@@ -693,24 +654,29 @@ byYearSummary
 # ... with 52 more rows
 ```
 
-There are two years with the most economic damage: 2006 and 2005.
-
-
+Years with the most economic damage:
 
 ```r
+# load data frame
+load(paste(project.data, "byYearSummary.rda", sep = "/"))
+
 q1 <- ggplot(byYearSummary, aes(x = year, y = damage.bb)) +
   geom_point() + 
+  geom_smooth() +
   ggtitle("Impact on economy 1950-2011") + 
   labs(y = "Billions US$") +
   theme(plot.title = element_text(hjust=0.5))
+
 q2 <- ggplot(byYearSummary, aes(x = year, y = fatalities)) +
   geom_point() +
+  geom_smooth() +
   ggtitle("impact on human life, 1950-2011") +
   labs(y = "Fatalities") +
     theme(plot.title = element_text(hjust=0.5))
 
 q3 <- ggplot(byYearSummary, aes(x = year, y = injuries)) +
   geom_point() +
+  geom_smooth() +
   ggtitle("impact on health, 1950-2011") +
   labs(y = "Injured") +
     theme(plot.title = element_text(hjust=0.5))
@@ -720,15 +686,11 @@ gridExtra::grid.arrange(q1, arrangeGrob(q2, q3), ncol=2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-26-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
 
 
 
 
-```r
-# save losses by year
-save(byYearSummary, file = paste(project.data, "byYearSummary.rda", sep = "/"))
-```
 
 ### what is the worst weather event in 2005?
 
@@ -737,25 +699,18 @@ save(byYearSummary, file = paste(project.data, "byYearSummary.rda", sep = "/"))
 worst <- stormdata.small %>%
   select(REFNUM, DATE, STATE, EVTYPE, PROPDMG, PROPDMGEXP) %>%
   arrange(desc(PROPDMG))
+```
 
+```
+Error in eval(expr, envir, enclos): object 'stormdata.small' not found
+```
+
+```r
 as_data_frame(worst)
 ```
 
 ```
-# A tibble: 902,297 × 6
-   REFNUM       DATE  STATE            EVTYPE PROPDMG PROPDMGEXP
-    <dbl>     <dttm> <fctr>            <fctr>   <dbl>     <fctr>
-1  778558 2009-07-26     NC THUNDERSTORM WIND    5000          K
-2  808182 2010-05-13     IL       FLASH FLOOD    5000          K
-3  808183 2010-05-13     IL       FLASH FLOOD    5000          K
-4  900646 2011-10-29     AM        WATERSPOUT    5000          K
-5  791393 2009-12-25     PR         LANDSLIDE    4800          K
-6  750915 2009-03-28     TN           TORNADO    4410          K
-7  762379 2009-05-12     OK THUNDERSTORM WIND    3500          K
-8  815064 2010-06-24     CT THUNDERSTORM WIND    3200          K
-9  749008 2009-02-11     IL         HIGH WIND    3000          K
-10 755010 2009-04-29     IN             FLOOD    3000          K
-# ... with 902,287 more rows
+Error in as_data_frame(worst): object 'worst' not found
 ```
 
 Show some events with doubtful monetary units.
@@ -778,12 +733,12 @@ as_data_frame(events)
 # ... with 1 more variables: REMARKS <chr>
 ```
 
-### Multiple identifiers for monetary units
+
+### Unknown identifiers for monetary units
 There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
-There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. Besides the identifiers `B`, `M` and `K`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts. In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data.
+There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. 
 
-Other characters or digits did not bring a special meaning to the dollar amount, so we didn't convert them even thoiugh we read the remarks to find some relationship.
-
+In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data. Other characters or digits did not bring a special meaning to the dollar amount, so we didn't convert them even thoiugh we read the remarks to find some relationship.
 
 
 ```r
@@ -889,3 +844,42 @@ an error!
 ```
 
 There are 985 different type of events.
+
+
+### Saving a smaller dataset without the remarks
+Create a small data frame without the `REMARKS` variable.
+
+```r
+stormdata.small <- stormdata %>% 
+  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE,     # reorder
+         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
+
+as_data_frame(stormdata.small)
+```
+
+```
+# A tibble: 902,297 × 12
+   REFNUM       DATE  STATE COUNTY COUNTYNAME  EVTYPE FATALITIES INJURIES
+    <dbl>     <dttm> <fctr>  <dbl>     <fctr>  <fctr>      <dbl>    <dbl>
+1       1 1950-04-18     AL     97     MOBILE TORNADO          0       15
+2       2 1950-04-18     AL      3    BALDWIN TORNADO          0        0
+3       3 1951-02-20     AL     57    FAYETTE TORNADO          0        2
+4       4 1951-06-08     AL     89    MADISON TORNADO          0        2
+5       5 1951-11-15     AL     43    CULLMAN TORNADO          0        2
+6       6 1951-11-15     AL     77 LAUDERDALE TORNADO          0        6
+7       7 1951-11-16     AL      9     BLOUNT TORNADO          0        1
+8       8 1952-01-22     AL    123 TALLAPOOSA TORNADO          0        0
+9       9 1952-02-13     AL    125 TUSCALOOSA TORNADO          1       14
+10     10 1952-02-13     AL     57    FAYETTE TORNADO          0        0
+# ... with 902,287 more rows, and 4 more variables: PROPDMG <dbl>,
+#   PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>
+```
+
+
+If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file as well.
+
+
+```r
+# save unique events by year
+save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
+```
