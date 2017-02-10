@@ -146,6 +146,7 @@ names(stormdata.raw)
 [36] "REMARKS"    "REFNUM"    
 ```
 
+This is how the raw data looks:
 
 ```r
 as_data_frame(stormdata.raw)
@@ -178,7 +179,7 @@ as_data_frame(stormdata.raw)
 
 ### What variables do we keep for our analysis?
 
-These are the variable that we consider important for the analysis:
+These are the variables that we consider important for the analysis:
 
         REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS
@@ -207,19 +208,7 @@ stormdata <- stormdata.raw %>%
 ```
 
 
-We have an observation ID with the variable `REFNUM`. We check if all its values are unique:
-
-```r
-# REFNUM is the record id of the observation and is unique.
-length(unique(stormdata$REFNUM))
-range(unique(stormdata$REFNUM))
-```
-
-```
-[1] 902297
-[1]      1 902297
-```
-
+### IMPORTANT
 
 There is a typo in one of the observations in the California flood 2005/2006. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted around 2006 New Year.
 
@@ -323,7 +312,6 @@ as_data_frame(stormdata)
 
 
 
-
 ```r
 load(paste(project.data, "stormdata.rda", sep = "/"))  # load the data
 ```
@@ -356,58 +344,10 @@ as_data_frame(stormdata.small)
 #   PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>
 ```
 
-## Other questions
-### what is the worst weather event in 2005?
-
-```r
-# what is the worst weather event in 2005?
-worst <- stormdata.small %>%
-  select(REFNUM, DATE, STATE, EVTYPE, PROPDMG, PROPDMGEXP) %>%
-  arrange(desc(PROPDMG))
-
-as_data_frame(worst)
-```
-
-```
-# A tibble: 902,297 × 6
-   REFNUM       DATE  STATE            EVTYPE PROPDMG PROPDMGEXP
-    <dbl>     <dttm> <fctr>            <fctr>   <dbl>     <fctr>
-1  778558 2009-07-26     NC THUNDERSTORM WIND    5000          K
-2  808182 2010-05-13     IL       FLASH FLOOD    5000          K
-3  808183 2010-05-13     IL       FLASH FLOOD    5000          K
-4  900646 2011-10-29     AM        WATERSPOUT    5000          K
-5  791393 2009-12-25     PR         LANDSLIDE    4800          K
-6  750915 2009-03-28     TN           TORNADO    4410          K
-7  762379 2009-05-12     OK THUNDERSTORM WIND    3500          K
-8  815064 2010-06-24     CT THUNDERSTORM WIND    3200          K
-9  749008 2009-02-11     IL         HIGH WIND    3000          K
-10 755010 2009-04-29     IN             FLOOD    3000          K
-# ... with 902,287 more rows
-```
-
-Show some events with doubtful monetary units.
-
-```r
-events <- stormdata %>%
-  select(REFNUM, DATE, EVTYPE, REMARKS) %>%
-  filter(REFNUM %in% c(605943, 577616, 577615, 581535))
-as_data_frame(events)
-```
-
-```
-# A tibble: 4 × 4
-  REFNUM       DATE            EVTYPE
-   <dbl>     <dttm>            <fctr>
-1 577615 2005-08-28 HURRICANE/TYPHOON
-2 577616 2005-08-29       STORM SURGE
-3 581535 2005-08-29       STORM SURGE
-4 605943 2006-01-01             FLOOD
-# ... with 1 more variables: REMARKS <chr>
-```
 
 
 ### Saving a portion of the dataset
-If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file.
+If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file as well.
 
 
 ```r
@@ -415,41 +355,7 @@ If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. 
 save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
 ```
 
-
-### The recorded weather events
-Event Types `EVTYPE`
-
-
-```r
-# want to know how many levels this factor has
-as_data_frame(unique(stormdata$EVTYPE), 10)
-```
-
-```
-Warning in as.data.frame.factor(value, stringsAsFactors = FALSE, ...):
-'row.names' is not a character vector of length 985 -- omitting it. Will be
-an error!
-```
-
-```
-# A tibble: 985 × 1
-                       value
-                      <fctr>
-1                    TORNADO
-2                  TSTM WIND
-3                       HAIL
-4              FREEZING RAIN
-5                       SNOW
-6      ICE STORM/FLASH FLOOD
-7                   SNOW/ICE
-8               WINTER STORM
-9  HURRICANE OPAL/HIGH WINDS
-10        THUNDERSTORM WINDS
-# ... with 975 more rows
-```
-
-There are 985 different type of events.
-
+## The 1st Question
 ### Create data frames for 1st question
 We want to find now which type of events is more harmful to population health. We could group by `EVTYPE` and showing the variables FATALITIES and INJURIES.
 
@@ -511,7 +417,7 @@ byEvent.1
 # ... with 975 more rows
 ```
 
-     
+### Plots that address the 1st question     
 We plot now the top 5 events that cause more harm on the population:
 
 
@@ -532,9 +438,11 @@ gridExtra::grid.arrange(p1, p2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
+
+### The 2nd Question
 
 ## Assessing the Economic Damage
 The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`.
@@ -639,6 +547,7 @@ byDamage.mm
 # ... with 975 more rows
 ```
 
+### Plots for the 2nd question
 Get the top 5 and top 10 causes of economic damage.
 
 ```r
@@ -694,71 +603,8 @@ gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-28-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-24-1.png)<!-- -->
 
-
-### Multiple identifiers for monetary units
-There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
-There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. Besides the identifiers `B`, `M` and `K`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts. In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data.
-
-Other characters or digits did not bring a special meaning to the dollar amount, so we didn't convert them even thoiugh we read the remarks to find some relationship.
-
-
-
-```r
-unique(byDamage$PROPDMGEXP)
-```
-
-```
- [1] K M   B + 0 5 6 ? 4 2 3 H 7 - 1 8
-Levels:  - ? + 0 1 2 3 4 5 6 7 8 B H K M
-```
-
-
-```r
-unique(byDamage$CROPDMGEXP)
-```
-
-```
-[1]   M K B ? 0 2
-Levels:  ? 0 2 B K M
-```
-
-
-```r
-summary(byDamage)
-```
-
-```
-               EVTYPE          PROPDMG          PROPDMGEXP    
- HAIL             :288661   Min.   :   0.00          :465934  
- TSTM WIND        :219940   1st Qu.:   0.00   K      :424665  
- THUNDERSTORM WIND: 82563   Median :   0.00   M      : 11338  
- TORNADO          : 60652   Mean   :  12.06   0      :   216  
- FLASH FLOOD      : 54277   3rd Qu.:   0.50   B      :    39  
- FLOOD            : 25326   Max.   :5000.00   5      :    28  
- (Other)          :170878                     (Other):    77  
-    CROPDMG        CROPDMGEXP   PROPDMG.K          CROPDMG.K      
- Min.   :  0.000    :618413   Min.   :       0   Min.   :      0  
- 1st Qu.:  0.000   ?:     7   1st Qu.:       0   1st Qu.:      0  
- Median :  0.000   0:    19   Median :       0   Median :      0  
- Mean   :  1.527   2:     1   Mean   :     346   Mean   :     54  
- 3rd Qu.:  0.000   B:     9   3rd Qu.:       0   3rd Qu.:      0  
- Max.   :990.000   K:281853   Max.   :31300000   Max.   :5000000  
-                   M:  1995                                       
-```
-
-
-Here is how we know how many observations do not carry the "K", "M" and "B" identifiers.
-
-
-```r
-unknown <- stormdata %>%
-  select(STATE, EVTYPE, PROPDMGEXP, CROPDMGEXP, REMARKS) %>%
-  filter(!toupper(PROPDMGEXP) %in% c("K", "M", "B") | !toupper(CROPDMGEXP) %in% c("K", "M", "B"))
-```
-
-There are 622760 observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
 
 
 ### Preparing the data for other questions
@@ -876,7 +722,7 @@ gridExtra::grid.arrange(q1, arrangeGrob(q2, q3), ncol=2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-36-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-28-1.png)<!-- -->
 
 
 
@@ -903,8 +749,165 @@ These are the results:
 6. There are a couple of major weather events in 2005 and 2006 where we can see a drastic impact on the economy of 100 and 125 billion dollars. One was Katrina affecting several states in the Southm, and the other was a major flood in California.
 
 
-## Figures
-Maximum: 03. Can use panels.
 
-## Code
+## Appendix
 
+### what is the worst weather event in 2005?
+
+```r
+# what is the worst weather event in 2005?
+worst <- stormdata.small %>%
+  select(REFNUM, DATE, STATE, EVTYPE, PROPDMG, PROPDMGEXP) %>%
+  arrange(desc(PROPDMG))
+
+as_data_frame(worst)
+```
+
+```
+# A tibble: 902,297 × 6
+   REFNUM       DATE  STATE            EVTYPE PROPDMG PROPDMGEXP
+    <dbl>     <dttm> <fctr>            <fctr>   <dbl>     <fctr>
+1  778558 2009-07-26     NC THUNDERSTORM WIND    5000          K
+2  808182 2010-05-13     IL       FLASH FLOOD    5000          K
+3  808183 2010-05-13     IL       FLASH FLOOD    5000          K
+4  900646 2011-10-29     AM        WATERSPOUT    5000          K
+5  791393 2009-12-25     PR         LANDSLIDE    4800          K
+6  750915 2009-03-28     TN           TORNADO    4410          K
+7  762379 2009-05-12     OK THUNDERSTORM WIND    3500          K
+8  815064 2010-06-24     CT THUNDERSTORM WIND    3200          K
+9  749008 2009-02-11     IL         HIGH WIND    3000          K
+10 755010 2009-04-29     IN             FLOOD    3000          K
+# ... with 902,287 more rows
+```
+
+Show some events with doubtful monetary units.
+
+```r
+events <- stormdata %>%
+  select(REFNUM, DATE, EVTYPE, REMARKS) %>%
+  filter(REFNUM %in% c(605943, 577616, 577615, 581535))
+as_data_frame(events)
+```
+
+```
+# A tibble: 4 × 4
+  REFNUM       DATE            EVTYPE
+   <dbl>     <dttm>            <fctr>
+1 577615 2005-08-28 HURRICANE/TYPHOON
+2 577616 2005-08-29       STORM SURGE
+3 581535 2005-08-29       STORM SURGE
+4 605943 2006-01-01             FLOOD
+# ... with 1 more variables: REMARKS <chr>
+```
+
+### Multiple identifiers for monetary units
+There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
+There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. Besides the identifiers `B`, `M` and `K`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts. In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data.
+
+Other characters or digits did not bring a special meaning to the dollar amount, so we didn't convert them even thoiugh we read the remarks to find some relationship.
+
+
+
+```r
+unique(byDamage$PROPDMGEXP)
+```
+
+```
+ [1] K M   B + 0 5 6 ? 4 2 3 H 7 - 1 8
+Levels:  - ? + 0 1 2 3 4 5 6 7 8 B H K M
+```
+
+
+```r
+unique(byDamage$CROPDMGEXP)
+```
+
+```
+[1]   M K B ? 0 2
+Levels:  ? 0 2 B K M
+```
+
+
+```r
+summary(byDamage)
+```
+
+```
+               EVTYPE          PROPDMG          PROPDMGEXP    
+ HAIL             :288661   Min.   :   0.00          :465934  
+ TSTM WIND        :219940   1st Qu.:   0.00   K      :424665  
+ THUNDERSTORM WIND: 82563   Median :   0.00   M      : 11338  
+ TORNADO          : 60652   Mean   :  12.06   0      :   216  
+ FLASH FLOOD      : 54277   3rd Qu.:   0.50   B      :    39  
+ FLOOD            : 25326   Max.   :5000.00   5      :    28  
+ (Other)          :170878                     (Other):    77  
+    CROPDMG        CROPDMGEXP   PROPDMG.K          CROPDMG.K      
+ Min.   :  0.000    :618413   Min.   :       0   Min.   :      0  
+ 1st Qu.:  0.000   ?:     7   1st Qu.:       0   1st Qu.:      0  
+ Median :  0.000   0:    19   Median :       0   Median :      0  
+ Mean   :  1.527   2:     1   Mean   :     346   Mean   :     54  
+ 3rd Qu.:  0.000   B:     9   3rd Qu.:       0   3rd Qu.:      0  
+ Max.   :990.000   K:281853   Max.   :31300000   Max.   :5000000  
+                   M:  1995                                       
+```
+
+
+Here is how we know how many observations do not carry the "K", "M" and "B" identifiers.
+
+
+```r
+unknown <- stormdata %>%
+  select(STATE, EVTYPE, PROPDMGEXP, CROPDMGEXP, REMARKS) %>%
+  filter(!toupper(PROPDMGEXP) %in% c("K", "M", "B") | !toupper(CROPDMGEXP) %in% c("K", "M", "B"))
+```
+
+There are 622760 observations which dollar amount units are not properly identified in `PROPDMGEXP` and `CROPDMGEXP` variables.
+
+
+### The observation ID
+We have observation IDs in the variable `REFNUM`. We check if all its values are unique:
+
+```r
+# REFNUM is the record id of the observation and is unique.
+length(unique(stormdata$REFNUM))
+range(unique(stormdata$REFNUM))
+```
+
+```
+[1] 902297
+[1]      1 902297
+```
+
+
+### The recorded weather events
+Event Types `EVTYPE`
+
+```r
+# want to know how many levels this factor has
+as_data_frame(unique(stormdata$EVTYPE), 10)
+```
+
+```
+Warning in as.data.frame.factor(value, stringsAsFactors = FALSE, ...):
+'row.names' is not a character vector of length 985 -- omitting it. Will be
+an error!
+```
+
+```
+# A tibble: 985 × 1
+                       value
+                      <fctr>
+1                    TORNADO
+2                  TSTM WIND
+3                       HAIL
+4              FREEZING RAIN
+5                       SNOW
+6      ICE STORM/FLASH FLOOD
+7                   SNOW/ICE
+8               WINTER STORM
+9  HURRICANE OPAL/HIGH WINDS
+10        THUNDERSTORM WINDS
+# ... with 975 more rows
+```
+
+There are 985 different type of events.
