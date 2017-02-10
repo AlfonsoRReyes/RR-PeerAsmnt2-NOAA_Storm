@@ -269,12 +269,14 @@ We plot now the top 5 events that cause more harm on the population:
 byEvent.Fat <- byEvent.0[1:12, ]
 byEvent.Inj <- byEvent.1[1:12, ]
 
+# plot sorted by number of fatalities
 p1 <- ggplot(byEvent.Fat, aes(x = reorder(EVTYPE, -fatal.sum), y = fatal.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Fatalities") +
   geom_text(aes(label=fatal.sum, vjust = -0.25)) +  
   scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
 
+# plot sorted by number of injuries
 p2 <- ggplot(byEvent.Inj, aes(x = reorder(EVTYPE, -injur.sum), y = injur.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Injuries") +
@@ -287,10 +289,11 @@ grid.rect(gp=gpar(fill=NA))
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States. Even though **hurricanes/typhons** are the most detrimental to the economy, they are not the main threat to human life; it is tornados by their unpredictability. Hurricanes are pretty well forecast nowadays and are 25th as the cause in human mortality.
 
+
 ## The 2nd Question
 
 ## Assessing the Economic Damage
-The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`.
+The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`. In addition, other characters are used under these variables. In the *Appendix* is explained how many more identifiers are used as a monetary identifier.
 
 We will start by converting the monetary damages to a consistent units. We will choose thousands.
 
