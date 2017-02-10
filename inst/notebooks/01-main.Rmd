@@ -94,7 +94,6 @@ downloadZip <- function(fileUrl, outDir="./data", bzip2 = FALSE) {
 
 
 ```{r cache=TRUE}
-# TO-DO: skip downloading if the CSV already exists
 # URL of the dataset file
 fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
 cat("Unpacking the raw data file:\n")
@@ -130,6 +129,7 @@ as_data_frame(stormdata.raw)
 
 
 ### What variables do we keep for our analysis?
+
 These are the variable that we consider important for the analysis:
 
         REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
@@ -137,6 +137,8 @@ These are the variable that we consider important for the analysis:
 
 
 ```{r}
+# read the raw data from original source and load to object stormdata
+# stormdata will be cleaned up, some variables converted and some corrections made.
 stormdata <- stormdata.raw %>%
   select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
          FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS) %>%
@@ -146,29 +148,76 @@ stormdata <- stormdata.raw %>%
          FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS) %>%
   # convert *EXP to uppercase and remove trailing spaces
   mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))),      # clean the string
-         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP))))
+         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP)))) %>%
+  mutate(REMARKS = as.character(REMARKS))
   
 # rm(stormdata.raw)     # release big dataset
 save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
+```{r}
+str(stormdata)
+```
+
+There is a typo in one of the observations in the California flood 2005/2006. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted around 2006 New Year.
+
+We are saving the correction in `stormdata.rda`. So, if the reader wants to reproduce the error, it wil be necessary to load the data from scratch, starting with downloading the file from the original source. The code above wll reproduce the steps necessary. To see the observation with the typo (it was writen "B" instead of "M" in the variable `PROPDMGEXP`), it corresponds to observation 605943 as identified by the variable `REFNUM`.
+
 
 ```{r}
 # floods in California from Xmas 2005 to around New Year 2006
 # one record improperly entered as Billions instead of millions REFNUM=605943
-# get the observations for these floods in California where the damages are above 0
-stormdata %>%
-  filter(DATE >= "2005-12-25" & 
-           DATE <= "2006-01-02" & 
-           STATE == "CA" & 
-           PROPDMG > 0) %>%
+ca.flood <- stormdata %>%
+  filter(DATE >= "2005-12-25" & DATE <= "2006-01-02" & STATE == "CA" & PROPDMG > 0) %>%
   arrange(DATE) %>%
   select(REFNUM, DATE, STATE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
+
+ca.flood
 ```
 
 
 Event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the 300 million dollars range. See paper USGS _____.
 
+
+```{r}
+stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")] <- "M"
+```
+
+```{r}
+stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")]
+```
+
+
+```{r}
+remarks.605943 <- stormdata[stormdata$REFNUM==605943, c("REMARKS")]
+remarks.605943
+```
+
+```{r}
+text.was <- "Major flooding continued into the early hours of January 1st, before the Napa River finally fell below flood stage and the water receeded. Flooding was severe in Downtown Napa from the Napa Creek and the City and Parks Department was hit with $6 million in damage alone. The City of Napa had 600 homes with moderate damage, 150 damaged businesses with costs of at least $70 million."
+
+remarks.605943 <- paste("Correct typo in property damage from 'B' (biilion) to 'M' (million).", text.was, sep = "| ")
+remarks.605943
+```
+
+```{r}
+stormdata[stormdata$REFNUM==605943, c("REMARKS")] <- remarks.605943
+```
+
+```{r}
+# save stormdata after corrections
+save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
+```
+
+
+```{r}
+# write.csv(stormdata, file = paste(project.data, "stormdata.csv", sep = "/"))   # file too big > 350MB
+```
+
+
+```{r}
+str(stormdata)
+```
 
 
 ```{r}
@@ -195,6 +244,11 @@ as_data_frame(stormdata)
 
 ### Clean up the dataset
 We will transform the variable `BGN_DATE` from a factor to a date variable. We will later use it for our summaries. We will also take out some variables that are not relevant to our study.
+
+```{r}
+load(paste(project.data, "stormdata.rda", sep = "/"))  # load the data
+```
+
 
 ```{r}
 stormdata.small <- stormdata %>% 
