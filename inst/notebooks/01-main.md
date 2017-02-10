@@ -425,12 +425,14 @@ We plot now the top 5 events that cause more harm on the population:
 byEvent.Fat <- byEvent.0[1:12, ]
 byEvent.Inj <- byEvent.1[1:12, ]
 
+# plot sorted by number of fatalities
 p1 <- ggplot(byEvent.Fat, aes(x = reorder(EVTYPE, -fatal.sum), y = fatal.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Fatalities") +
   geom_text(aes(label=fatal.sum, vjust = -0.25)) +  
   scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
 
+# plot sorted by number of injuries
 p2 <- ggplot(byEvent.Inj, aes(x = reorder(EVTYPE, -injur.sum), y = injur.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Injuries") +
@@ -443,12 +445,13 @@ grid.rect(gp=gpar(fill=NA))
 
 ![](01-main_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
 
-Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
+Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States. Even though **hurricanes/typhons** are the most detrimental to the economy, they are not the main threat to human life; it is tornados by their unpredictability. Hurricanes are pretty well forecast nowadays and are 25th as the cause in human mortality.
+
 
 ## The 2nd Question
 
 ## Assessing the Economic Damage
-The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`.
+The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`. In addition, other characters are used under these variables. In the *Appendix* is explained how many more identifiers are used as a monetary identifier.
 
 We will start by converting the monetary damages to a consistent units. We will choose thousands.
 
@@ -488,35 +491,6 @@ Groups: EVTYPE [985]
 
 We convert the thousands to millions of US$ and only one variable, the total economic damage.
 
-
-```r
-# convert damage to million and put it on new variable
-byDamage.million <- byDamage %>%
-  select(EVTYPE, PROPDMG.K, CROPDMG.K) %>%
-  mutate(propdmg.m = PROPDMG.K /1000, cropdmg.m = CROPDMG.K / 1000) %>%
-  summarize(propdmg = sum(propdmg.m), cropdmg = sum(cropdmg.m)) %>%
-  mutate(damage.total = propdmg + cropdmg) %>%
-  arrange(desc(damage.total))
-
-byDamage.million
-```
-
-```
-# A tibble: 985 × 4
-              EVTYPE   propdmg    cropdmg damage.total
-              <fctr>     <dbl>      <dbl>        <dbl>
-1  HURRICANE/TYPHOON 69305.840  2607.8728    71913.713
-2            TORNADO 56937.160   414.9531    57352.114
-3        STORM SURGE 43323.536     0.0050    43323.541
-4              FLOOD 29772.710  5661.9685    35434.678
-5               HAIL 15732.267  3025.9545    18758.221
-6        FLASH FLOOD 16140.812  1421.3171    17562.129
-7            DROUGHT  1046.106 13972.5660    15018.672
-8          HURRICANE 11868.319  2741.9100    14610.229
-9        RIVER FLOOD  5118.945  5029.4590    10148.405
-10         ICE STORM  3944.928  5022.1135     8967.041
-# ... with 975 more rows
-```
 
 
 
@@ -610,7 +584,7 @@ gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-24-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
 
 
 
@@ -746,7 +720,7 @@ gridExtra::grid.arrange(q1, arrangeGrob(q2, q3), ncol=2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-27-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-26-1.png)<!-- -->
 
 
 
