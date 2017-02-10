@@ -285,7 +285,7 @@ gridExtra::grid.arrange(p1, p2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
+Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States. Even though **hurricanes/typhons** are the most detrimental to the economy, they are not the main threat to human life; it is tornados by their unpredictability. Hurricanes are pretty well forecast nowadays and are 25th as the cause in human mortality.
 
 ## The 2nd Question
 
