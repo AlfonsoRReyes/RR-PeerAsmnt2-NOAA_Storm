@@ -422,14 +422,14 @@ We plot now the top 5 events that cause more harm on the population:
 
 
 ```r
-byEvent.005 <- byEvent.0[1:5, ]
+byEvent.top <- byEvent.0[1:10, ]
 
-p1 <- ggplot(byEvent.005, aes(x = reorder(EVTYPE, -fatal.sum), y = fatal.sum)) +
+p1 <- ggplot(byEvent.top, aes(x = reorder(EVTYPE, -fatal.sum), y = fatal.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Fatalities") +
   geom_text(aes(label=fatal.sum, vjust = -0.25))
 
-p2 <- ggplot(byEvent.005, aes(x = reorder(EVTYPE, -injur.sum), y = injur.sum)) +
+p2 <- ggplot(byEvent.top, aes(x = reorder(EVTYPE, -injur.sum), y = injur.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Injuries") +
   geom_text(aes(label=injur.sum, vjust = -0.25))
