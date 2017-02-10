@@ -209,11 +209,9 @@ stormdata <- stormdata.raw %>%
 
 
 ### IMPORTANT
+There is a typo in one of the observations in the California flood 2005/2006 that distorts the economy impact. The typo says **billions** instead of **millions** in the flood events in Californa. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted during 2006 New Year.
 
-There is a typo in one of the observations in the California flood 2005/2006. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted around 2006 New Year.
-
-We are saving the correction in `stormdata.rda`. So, if the reader wants to reproduce the error, it wil be necessary to load the data from scratch, starting with downloading the file from the original source. The code above wll reproduce the steps necessary. To see the observation with the typo (it was writen "B" instead of "M" in the variable `PROPDMGEXP`), it corresponds to observation 605943 as identified by the variable `REFNUM`.
-
+We are saving the corrections in `stormdata.rda`. So, if the reader wants to reproduce the error, it wil be necessary to load the data from scratch, starting with downloading the file from the original source in the web. The code above wll reproduce the steps necessary. To see the observation with the typo (it was writen "B" instead of "M" in the variable `PROPDMGEXP`), it corresponds to observation 605943 as identified by the variable `REFNUM`.
 
 
 ```r
@@ -245,8 +243,9 @@ as_data_frame(ca.flood)
 ```
 
 
-Event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the 300 million dollars range. See paper USGS _____.
+The event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the hundred million dollars range. See paper USGS Open-File Report 2006–1182, which describes the phenomena and economic losses.
 
+### Making the correction from Billions to Millions
 Replace the "B" of billions by "M" (millons):
 
 ```r
@@ -258,7 +257,6 @@ stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")]
 [1] M
 Levels:  - ? + 0 1 2 3 4 5 6 7 8 B H K M
 ```
-
 
 Add a new comment on correction to the `REMARKS` variable:
 
@@ -280,15 +278,19 @@ remarks.605943 <- paste("Correct typo in property damage from 'B' (biilion) to '
 
 # impute the new remark
 stormdata[stormdata$REFNUM==605943, c("REMARKS")] <- remarks.605943
-
-# save stormdata after corrections
-save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
 
 This is a view of the data frame that we will use in our analysis.
 
 ```r
+# save stormdata after corrections
+save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
+# remove data frame from memory
+rm(stormdata)
+# load data frame
+load(paste(project.data, "stormdata.rda", sep = "/"))
+# show on screen
 as_data_frame(stormdata)
 ```
 
@@ -310,50 +312,6 @@ as_data_frame(stormdata)
 #   PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>, REMARKS <chr>
 ```
 
-
-
-```r
-load(paste(project.data, "stormdata.rda", sep = "/"))  # load the data
-```
-
-Create a small data frame without the `REMARKS` variable.
-
-```r
-stormdata.small <- stormdata %>% 
-  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE,     # reorder
-         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
-
-as_data_frame(stormdata.small)
-```
-
-```
-# A tibble: 902,297 × 12
-   REFNUM       DATE  STATE COUNTY COUNTYNAME  EVTYPE FATALITIES INJURIES
-    <dbl>     <dttm> <fctr>  <dbl>     <fctr>  <fctr>      <dbl>    <dbl>
-1       1 1950-04-18     AL     97     MOBILE TORNADO          0       15
-2       2 1950-04-18     AL      3    BALDWIN TORNADO          0        0
-3       3 1951-02-20     AL     57    FAYETTE TORNADO          0        2
-4       4 1951-06-08     AL     89    MADISON TORNADO          0        2
-5       5 1951-11-15     AL     43    CULLMAN TORNADO          0        2
-6       6 1951-11-15     AL     77 LAUDERDALE TORNADO          0        6
-7       7 1951-11-16     AL      9     BLOUNT TORNADO          0        1
-8       8 1952-01-22     AL    123 TALLAPOOSA TORNADO          0        0
-9       9 1952-02-13     AL    125 TUSCALOOSA TORNADO          1       14
-10     10 1952-02-13     AL     57    FAYETTE TORNADO          0        0
-# ... with 902,287 more rows, and 4 more variables: PROPDMG <dbl>,
-#   PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>
-```
-
-
-
-### Saving a portion of the dataset
-If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file as well.
-
-
-```r
-# save unique events by year
-save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
-```
 
 ## The 1st Question
 ### Create data frames for 1st question
@@ -444,7 +402,7 @@ gridExtra::grid.arrange(p1, p2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States. 
 
@@ -583,7 +541,7 @@ gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)  # 3-in-1 figure
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
 
 
 
@@ -716,7 +674,7 @@ gridExtra::grid.arrange(q1, arrangeGrob(q2, q3), ncol=2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-26-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
 
 
 
@@ -733,25 +691,18 @@ save(byYearSummary, file = paste(project.data, "byYearSummary.rda", sep = "/"))
 worst <- stormdata.small %>%
   select(REFNUM, DATE, STATE, EVTYPE, PROPDMG, PROPDMGEXP) %>%
   arrange(desc(PROPDMG))
+```
 
+```
+Error in eval(expr, envir, enclos): object 'stormdata.small' not found
+```
+
+```r
 as_data_frame(worst)
 ```
 
 ```
-# A tibble: 902,297 × 6
-   REFNUM       DATE  STATE            EVTYPE PROPDMG PROPDMGEXP
-    <dbl>     <dttm> <fctr>            <fctr>   <dbl>     <fctr>
-1  778558 2009-07-26     NC THUNDERSTORM WIND    5000          K
-2  808182 2010-05-13     IL       FLASH FLOOD    5000          K
-3  808183 2010-05-13     IL       FLASH FLOOD    5000          K
-4  900646 2011-10-29     AM        WATERSPOUT    5000          K
-5  791393 2009-12-25     PR         LANDSLIDE    4800          K
-6  750915 2009-03-28     TN           TORNADO    4410          K
-7  762379 2009-05-12     OK THUNDERSTORM WIND    3500          K
-8  815064 2010-06-24     CT THUNDERSTORM WIND    3200          K
-9  749008 2009-02-11     IL         HIGH WIND    3000          K
-10 755010 2009-04-29     IN             FLOOD    3000          K
-# ... with 902,287 more rows
+Error in as_data_frame(worst): object 'worst' not found
 ```
 
 Show some events with doubtful monetary units.
@@ -885,3 +836,42 @@ an error!
 ```
 
 There are 985 different type of events.
+
+
+### Saving a smaller dataset without the remarks
+Create a small data frame without the `REMARKS` variable.
+
+```r
+stormdata.small <- stormdata %>% 
+  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE,     # reorder
+         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
+
+as_data_frame(stormdata.small)
+```
+
+```
+# A tibble: 902,297 × 12
+   REFNUM       DATE  STATE COUNTY COUNTYNAME  EVTYPE FATALITIES INJURIES
+    <dbl>     <dttm> <fctr>  <dbl>     <fctr>  <fctr>      <dbl>    <dbl>
+1       1 1950-04-18     AL     97     MOBILE TORNADO          0       15
+2       2 1950-04-18     AL      3    BALDWIN TORNADO          0        0
+3       3 1951-02-20     AL     57    FAYETTE TORNADO          0        2
+4       4 1951-06-08     AL     89    MADISON TORNADO          0        2
+5       5 1951-11-15     AL     43    CULLMAN TORNADO          0        2
+6       6 1951-11-15     AL     77 LAUDERDALE TORNADO          0        6
+7       7 1951-11-16     AL      9     BLOUNT TORNADO          0        1
+8       8 1952-01-22     AL    123 TALLAPOOSA TORNADO          0        0
+9       9 1952-02-13     AL    125 TUSCALOOSA TORNADO          1       14
+10     10 1952-02-13     AL     57    FAYETTE TORNADO          0        0
+# ... with 902,287 more rows, and 4 more variables: PROPDMG <dbl>,
+#   PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>
+```
+
+
+If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. On the other hand, if we omit the `REMARKS` variable, the new dataset shrinks to only 4.6 megabytes. We will take this route of saving the smaller file as well.
+
+
+```r
+# save unique events by year
+save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
+```
