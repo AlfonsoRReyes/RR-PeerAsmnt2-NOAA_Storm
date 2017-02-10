@@ -204,23 +204,6 @@ save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
 
-
-```{r}
-# write.csv(stormdata, file = paste(project.data, "stormdata.csv", sep = "/"))   # file too big > 350MB
-```
-
-
-```{r}
-str(stormdata)
-```
-
-
-```{r}
-# what are the states in the variable
-unique(stormdata$STATE)
-```
-
-
 To save memory we release now the 'stormdata.raw`  object.
 
 
