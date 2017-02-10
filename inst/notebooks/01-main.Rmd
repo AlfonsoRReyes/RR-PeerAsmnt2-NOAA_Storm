@@ -419,8 +419,8 @@ byYearSummary <- byYearEvent %>%
 byYearSummary
 ```
 
-There are two years with the most economic damage: 2006 and 2006.
-```{r fig.asp=1}
+Years with the most economic damage:
+```{r fig.height=7, fig.width=10}
 q1 <- ggplot(byYearSummary, aes(x = year, y = damage.bb)) +
   geom_point() + 
   ggtitle("Impact on economy 1950-2011") + 
