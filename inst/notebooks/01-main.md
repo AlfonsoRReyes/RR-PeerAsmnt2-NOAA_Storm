@@ -313,7 +313,8 @@ as_data_frame(stormdata)
 ```
 
 
-## The 1st Question
+## The 1st Question. Which types of events are most harmful with respect to population health?
+
 ### Create data frames for 1st question
 We want to find now which type of events is more harmful to population health. We could group by `EVTYPE` and showing the variables FATALITIES and INJURIES.
 
@@ -407,7 +408,7 @@ grid.rect(gp=gpar(fill=NA))
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States. 
 
 
-## The 2nd Question
+## The 2nd Question. Which types of events have the greatest economic consequences?
 
 ## Assessing the Economic Damage
 The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`. In addition, other characters are used under these variables. In the *Appendix* is explained how many more identifiers are used as a monetary identifier.
@@ -649,7 +650,7 @@ byYearSummary
 # ... with 52 more rows
 ```
 
-There are two years with the most economic damage: 2006 and 2006.
+Years with the most economic damage:
 
 ```r
 q1 <- ggplot(byYearSummary, aes(x = year, y = damage.bb)) +
