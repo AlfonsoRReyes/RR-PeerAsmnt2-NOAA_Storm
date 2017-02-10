@@ -178,13 +178,12 @@ as_data_frame(ca.flood)
 
 The event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the hundred million dollars range. See paper USGS Open-File Report 2006–1182, which describes the phenomena and economic losses.
 
-### 
+### Making the correction from Billions to Millions
 Replace the "B" of billions by "M" (millons):
 ```{r}
 stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")] <- "M"
 stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")]
 ```
-
 
 Add a new comment on correction to the `REMARKS` variable:
 ```{r}
@@ -200,19 +199,24 @@ remarks.605943 <- paste("Correct typo in property damage from 'B' (biilion) to '
 # impute the new remark
 stormdata[stormdata$REFNUM==605943, c("REMARKS")] <- remarks.605943
 
-# save stormdata after corrections
-save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
 
 This is a view of the data frame that we will use in our analysis.
 ```{r}
+# save stormdata after corrections
+save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
+# remove data frame from memory
+rm(stormdata)
+# load data frame
+load(paste(project.data, "stormdata.rda", sep = "/"))
+# show on screen
 as_data_frame(stormdata)
 ```
 
 
 ```{r}
-load(paste(project.data, "stormdata.rda", sep = "/"))  # load the data
+
 ```
 
 Create a small data frame without the `REMARKS` variable.
