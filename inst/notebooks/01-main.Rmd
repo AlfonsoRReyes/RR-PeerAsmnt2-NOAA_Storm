@@ -2,9 +2,9 @@
 title: "Analysis of weather impact on people and the economy"
 author: "Alfonso R. Reyes"
 output:
-  html_notebook: default
   html_document:
     keep_md: yes
+  html_notebook: default
 ---
 
 ```{r setup, include=FALSE, error=TRUE, message=FALSE}
@@ -152,7 +152,7 @@ stormdata <- stormdata.raw %>%
   mutate(REMARKS = as.character(REMARKS))
   
 # rm(stormdata.raw)     # release big dataset
-save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
+# save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
 ```{r}
@@ -172,42 +172,37 @@ ca.flood <- stormdata %>%
   arrange(DATE) %>%
   select(REFNUM, DATE, STATE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
 
-ca.flood
+as_data_frame(ca.flood)
 ```
 
 
 Event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the 300 million dollars range. See paper USGS _____.
 
-
+Replace the "B" of billions by "M" (millons):
 ```{r}
 stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")] <- "M"
-```
-
-```{r}
 stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")]
 ```
 
 
+Add a new comment on correction to the `REMARKS` variable:
 ```{r}
+# Get the remark if stormdata.raw was loaded
 remarks.605943 <- stormdata[stormdata$REFNUM==605943, c("REMARKS")]
 remarks.605943
-```
 
-```{r}
 text.was <- "Major flooding continued into the early hours of January 1st, before the Napa River finally fell below flood stage and the water receeded. Flooding was severe in Downtown Napa from the Napa Creek and the City and Parks Department was hit with $6 million in damage alone. The City of Napa had 600 homes with moderate damage, 150 damaged businesses with costs of at least $70 million."
 
+# this is the new remark
 remarks.605943 <- paste("Correct typo in property damage from 'B' (biilion) to 'M' (million).", text.was, sep = "| ")
-remarks.605943
-```
 
-```{r}
+# impute the new remark
 stormdata[stormdata$REFNUM==605943, c("REMARKS")] <- remarks.605943
-```
 
-```{r}
 # save stormdata after corrections
 save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
+
 
 
 ```{r}
@@ -576,5 +571,4 @@ These are the results:
 Maximum: 03. Can use panels.
 
 ## Code
-
 
