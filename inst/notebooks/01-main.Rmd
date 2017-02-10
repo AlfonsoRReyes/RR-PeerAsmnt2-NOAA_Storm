@@ -237,10 +237,6 @@ as_data_frame(stormdata.small)
 # what is the worst weather event in 2005?
 worst <- stormdata.small %>%
   select(REFNUM, DATE, STATE, EVTYPE, PROPDMG, PROPDMGEXP) %>%
-  mutate(PROPDMG = ifelse(toupper(PROPDMGEXP) == "M", PROPDMG/1000, 
-                          ifelse(toupper(PROPDMGEXP) == "K", PROPDMG/1E6,
-                                 ifelse(toupper(PROPDMGEXP) == "B", PROPDMG, 0)))) %>%
-  #filter(PROPDMGEXP == "B") %>%
   arrange(desc(PROPDMG))
 
 worst
