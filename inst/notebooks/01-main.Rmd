@@ -192,14 +192,19 @@ remarks.605943
 ```
 
 ```{r}
-text <- "Major flooding continued into the early hours of January 1st, before the Napa River finally fell below flood stage and the water receeded. Flooding was severe in Downtown Napa from the Napa Creek and the City and Parks Department was hit with $6 million in damage alone. The City of Napa had 600 homes with moderate damage, 150 damaged businesses with costs of at least $70 million."
+text.was <- "Major flooding continued into the early hours of January 1st, before the Napa River finally fell below flood stage and the water receeded. Flooding was severe in Downtown Napa from the Napa Creek and the City and Parks Department was hit with $6 million in damage alone. The City of Napa had 600 homes with moderate damage, 150 damaged businesses with costs of at least $70 million."
 
-remarks.605943 <- paste("Correct typo in property damage from 'B' (biilion) to 'M' (million).", remarks.605943, sep = "|")
+remarks.605943 <- paste("Correct typo in property damage from 'B' (biilion) to 'M' (million).", text.was, sep = "| ")
 remarks.605943
 ```
 
 ```{r}
 stormdata[stormdata$REFNUM==605943, c("REMARKS")] <- remarks.605943
+```
+
+```{r}
+# save stormdata after corrections
+save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
 
