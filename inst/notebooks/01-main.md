@@ -417,6 +417,7 @@ byEvent.1
 # ... with 975 more rows
 ```
 
+
 ### Plots that address the 1st question     
 We plot now the top 5 events that cause more harm on the population:
 
@@ -445,7 +446,7 @@ grid.rect(gp=gpar(fill=NA))
 
 ![](01-main_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
 
-Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States. Even though **hurricanes/typhons** are the most detrimental to the economy, they are not the main threat to human life; it is tornados by their unpredictability. Hurricanes are pretty well forecast nowadays and are 25th as the cause in human mortality.
+Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States. 
 
 
 ## The 2nd Question
@@ -491,9 +492,6 @@ Groups: EVTYPE [985]
 
 We convert the thousands to millions of US$ and only one variable, the total economic damage.
 
-
-
-
 ```r
 byDamage.mm <- byDamage %>%
   summarize(propdmg.k = sum(PROPDMG.K), cropdmg.k = sum(CROPDMG.K)) %>%
@@ -524,6 +522,7 @@ byDamage.mm
 # ... with 975 more rows
 ```
 
+
 ### Plots for the 2nd question
 Get the top 5 and top 10 causes of economic damage.
 
@@ -551,7 +550,7 @@ byDamage.mm.top5
 
 
 ```r
-# plots for economic losses
+# plots for total economic losses
 r1 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
@@ -560,8 +559,8 @@ r1 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totald
   theme(axis.text.x = element_text(angle = 40, hjust = 1)) + 
   scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
 
+# plot for impact on property
 propdmg.bi <- byDamage.mm.top5$propdmg.m/1000
-
 r2 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
@@ -570,8 +569,8 @@ r2 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg
   theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
   scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
 
+# plot for impact on crops
 cropdmg.bi <- byDamage.mm.top5$cropdmg.m/1000
-
 r3 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
@@ -580,7 +579,7 @@ r3 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg
   theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
   scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
 
-gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)
+gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)  # 3-in-1 figure
 grid.rect(gp=gpar(fill=NA))
 ```
 
@@ -589,32 +588,33 @@ grid.rect(gp=gpar(fill=NA))
 
 
 ## Results
-<present the results here>
-
 These are the results:
 
-1. Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
+1. Tornados, excessive heat, flash floods, heat and lightning are the weather events most harmful to human life accross the United States. In the case of injuries caused to humans, tornados, excessive heat, lightning, heat and flash floods are the events causing them in descending order.
 
-2. In the case of injuries caused to humans tornados, excessive heat, lightning, heat and flash floods are the events causing them in descending order.
+2. Even though **hurricanes/typhons** are the most detrimental to the economy, they are not the main threat to human life; it is **tornados** by their *unpredictability*. Hurricanes are pretty well forecast nowadays with help of satellite. Hurricanes are 25th cause of human mortality.
 
-3. On the economic impact, we classified the weather events from the most damaging to the economy to the less. They are: flood, hurricane/typhoon, tornados, storm surge, hail, flash flodd, drought, river flood and ice storms. The economic impact totals both, property and crops.
+3. On the economic impact, we classified the weather events from the most damaging to the economy to the less. They are: flood, hurricane/typhoon, tornados, storm surge, hail, flash flodd, drought, river flood and ice storms. The economic impact totals both, property and crops. The scale of the plots is in Billions of USD.
 
-4. Other additional findings were that the weather events have been increasing its damage to the economy and for the population in general. From the plots, we can see that from 1992 onwards, the effects have been disastrous. The losses in the economic have ascended from few millions to tens or hundreds of billions! On the population we can appreciate an increase in mortality from about a hundred in average until the end of the 80s to five hundred to fifteen hundred fatalities. 
+4. Other additional findings were that the weather events have been **significantly increasing its damage to the economy** and for the population in general. From the plots in the appendix, we can see that from 1992 onwards, the effects have been disastrous. The losses in the economic have ascended from few millions to tens or hundreds of billions! On the population we can appreciate an increase in mortality from about a hundred in average (end of the 80s) to five hundred to fifteen hundred fatalities. 
 
-5. Injuries have had less devastating effect but has not duplicated or triplicated as in the economy or mortality. Additional studies may be advisable to find the reason to the control in injuries in humans because of the weather events. We can notice some cyclical shape on the injuries accross the years but the slope is mildly ascending.
+5. Over the years, weather events have had less devastating effect on injuries on humans. Injuries have not duplicated or triplicated as in the case of the economy or loss of life. Additional studies may be advisable to find the reason to the relative control in injuries dure to the weather events. We can also notice some cyclical shape on the injuries accross the years but the slope is mildly ascending.
 
-6. There are a couple of major weather events in 2005 and 2006 where we can see a drastic impact on the economy of 100 and 125 billion dollars. One was Katrina affecting several states in the Southm, and the other was a major flood in California.
+6. There are a couple of major weather events in 2005  where we can see a drastic impact on the economy of 100 billion dollars. That was Katrina affecting several states in the South.
 
+7. Besides the identifiers `B`, `M` and `K`, in the variables `PROPDMGEXP` and `CROPDMGEXP`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts. 
+
+8. Anoher interesting thing we noticed from the plot in the appendix is that until 1979 the economy damage due to weather events was below 1 billion USD, with exception of 1973 and 1974. From then onwards it just keep increasing, peaking in Katrina in 2005 with $100 billion in property and crop damage. The average impact on the economy in the past 25 years has been averaging 25 billion USD.
 
 
 ## Appendix
 
 ### Have the number of fatalities and injuries increased over the years?
-We save few datasets that are much smaller in size than the original dataset.
+We have generated a couple of datasets that are much smaller in size than the original dataset.
 
-1. byYearEvent: is a dataset that contains a summary of the events, fatalities, injuries, economic losses in property and crops in millions of US$. TO-DO: convert dates to year.
+* byYearEvent: is a dataset that contains a summary of the events, fatalities, injuries, economic losses in property and crops in millions of US$. 
 
-2. byYearSummary: a dataset showing the year and the wather impact on life and the economy. Four variables: year, fatalities, injured and economy losses in millions of USD.
+* byYearSummary: a dataset showing the year and the wather impact on life and the economy. Four variables: year, fatalities, injured and economy losses in millions of USD.
 
 
 ```r
@@ -659,8 +659,6 @@ Groups: DATE [?]
 
 
 
-
-
 ```r
 #load(paste(project.data, "byYearEvent.rda", sep = "/"))  # load the data
 
@@ -693,9 +691,7 @@ byYearSummary
 # ... with 52 more rows
 ```
 
-There are two years with the most economic damage: 2006 and 2005.
-
-
+There are two years with the most economic damage: 2006 and 2006.
 
 ```r
 q1 <- ggplot(byYearSummary, aes(x = year, y = damage.bb)) +
@@ -778,12 +774,12 @@ as_data_frame(events)
 # ... with 1 more variables: REMARKS <chr>
 ```
 
-### Multiple identifiers for monetary units
+
+### Unknown identifiers for monetary units
 There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
-There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. Besides the identifiers `B`, `M` and `K`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts. In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data.
+There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. 
 
-Other characters or digits did not bring a special meaning to the dollar amount, so we didn't convert them even thoiugh we read the remarks to find some relationship.
-
+In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data. Other characters or digits did not bring a special meaning to the dollar amount, so we didn't convert them even thoiugh we read the remarks to find some relationship.
 
 
 ```r
