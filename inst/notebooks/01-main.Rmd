@@ -448,9 +448,7 @@ We save few datasets that are much smaller in size than the original dataset.
 ```{r}
 # By year, by event
 byYearEvent <- stormdata %>%
-  group_by(BGN_DATE, EVTYPE) %>%
-  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))), 
-         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP))))     %>%
+  group_by(DATE, EVTYPE) %>%
   mutate(PROPDMG.K = ifelse(PROPDMGEXP == "K", PROPDMG * 1,
                      ifelse(PROPDMGEXP == "M", PROPDMG * 1000,
                      ifelse(PROPDMGEXP == "B", PROPDMG * 1E6, 0)))) %>%
