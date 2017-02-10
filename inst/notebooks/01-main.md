@@ -442,7 +442,7 @@ grid.rect(gp=gpar(fill=NA))
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
 
-### The 2nd Question
+## The 2nd Question
 
 ## Assessing the Economic Damage
 The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`.
@@ -572,6 +572,7 @@ byDamage.mm.top5
 ```
 
 
+
 ```r
 # plots for economic losses
 r1 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)) +
@@ -579,7 +580,7 @@ r1 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totald
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Total impact on Economy") +
   geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25)) +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  theme(axis.text.x = element_text(angle = 40, hjust = 1))
 
 propdmg.bi <- byDamage.mm.top5$propdmg.m/1000
 
@@ -588,7 +589,7 @@ r2 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Economic impact on Property") +
   geom_text(aes(label=round(propdmg.bi, 0), vjust = -0.05)) + 
-theme(axis.text.x = element_text(angle = 30, hjust = 1))
+theme(axis.text.x = element_text(angle = 40, hjust = 1))
 
 cropdmg.bi <- byDamage.mm.top5$cropdmg.m/1000
 
@@ -597,7 +598,7 @@ r3 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Economic impact on Crops") +
   geom_text(aes(label=round(cropdmg.bi, 1), vjust = -0.05)) +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  theme(axis.text.x = element_text(angle = 40, hjust = 1))
 
 gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)
 grid.rect(gp=gpar(fill=NA))
@@ -607,7 +608,28 @@ grid.rect(gp=gpar(fill=NA))
 
 
 
-### Preparing the data for other questions
+## Results
+<present the results here>
+
+These are the results:
+
+1. Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
+
+2. In the case of injuries caused to humans tornados, excessive heat, lightning, heat and flash floods are the events causing them in descending order.
+
+3. On the economic impact, we classified the weather events from the most damaging to the economy to the less. They are: flood, hurricane/typhoon, tornados, storm surge, hail, flash flodd, drought, river flood and ice storms. The economic impact totals both, property and crops.
+
+4. Other additional findings were that the weather events have been increasing its damage to the economy and for the population in general. From the plots, we can see that from 1992 onwards, the effects have been disastrous. The losses in the economic have ascended from few millions to tens or hundreds of billions! On the population we can appreciate an increase in mortality from about a hundred in average until the end of the 80s to five hundred to fifteen hundred fatalities. 
+
+5. Injuries have had less devastating effect but has not duplicated or triplicated as in the economy or mortality. Additional studies may be advisable to find the reason to the control in injuries in humans because of the weather events. We can notice some cyclical shape on the injuries accross the years but the slope is mildly ascending.
+
+6. There are a couple of major weather events in 2005 and 2006 where we can see a drastic impact on the economy of 100 and 125 billion dollars. One was Katrina affecting several states in the Southm, and the other was a major flood in California.
+
+
+
+## Appendix
+
+### Have the number of fatalities and injuries increased over the years?
 We save few datasets that are much smaller in size than the original dataset.
 
 1. byYearEvent: is a dataset that contains a summary of the events, fatalities, injuries, economic losses in property and crops in millions of US$. TO-DO: convert dates to year.
@@ -630,6 +652,8 @@ byYearEvent <- stormdata %>%
             propdmg.M  = sum(PROPDMG.K) / 1000,
             cropdmg.M  = sum(CROPDMG.K) /1000
             )
+# save unique events by year
+save(byYearEvent, file = paste(project.data, "byYearEvent.rda", sep = "/"))
 
 byYearEvent
 ```
@@ -655,12 +679,6 @@ Groups: DATE [?]
 
 
 
-```r
-# save unique events by year
-save(byYearEvent, file = paste(project.data, "byYearEvent.rda", sep = "/"))
-```
-
-### Have the number of fatalities and injuries increased over the years?
 
 
 ```r
@@ -722,7 +740,7 @@ gridExtra::grid.arrange(q1, arrangeGrob(q2, q3), ncol=2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-28-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-27-1.png)<!-- -->
 
 
 
@@ -731,26 +749,6 @@ grid.rect(gp=gpar(fill=NA))
 # save losses by year
 save(byYearSummary, file = paste(project.data, "byYearSummary.rda", sep = "/"))
 ```
-
-## Results
-<present the results here>
-These are the results:
-
-1. Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
-
-2. In the case of injuries caused to humans tornados, excessive heat, lightning, heat and flash floods are the events causing them in descending order.
-
-3. On the economic impact, we classified the weather events from the most damaging to the economy to the less. They are: flood, hurricane/typhoon, tornados, storm surge, hail, flash flodd, drought, river flood and ice storms. The economic impact totals both, property and crops.
-
-4. Other additional findings were that the weather events have been increasing its damage to the economy and for the population in general. From the plots, we can see that from 1992 onwards, the effects have been disastrous. The losses in the economic have ascended from few millions to tens or hundreds of billions! On the population we can appreciate an increase in mortality from about a hundred in average until the end of the 80s to five hundred to fifteen hundred fatalities. 
-
-5. Injuries have had less devastating effect but has not duplicated or triplicated as in the economy or mortality. Additional studies may be advisable to find the reason to the control in injuries in humans because of the weather events. We can notice some cyclical shape on the injuries accross the years but the slope is mildly ascending.
-
-6. There are a couple of major weather events in 2005 and 2006 where we can see a drastic impact on the economy of 100 and 125 billion dollars. One was Katrina affecting several states in the Southm, and the other was a major flood in California.
-
-
-
-## Appendix
 
 ### what is the worst weather event in 2005?
 

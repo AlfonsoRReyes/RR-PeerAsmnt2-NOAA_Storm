@@ -264,7 +264,7 @@ byEvent.1
 ### Plots that address the 1st question     
 We plot now the top 5 events that cause more harm on the population:
 
-```{r fig.asp=1}
+```{r fig.height=7, fig.width=10}
 
 byEvent.005 <- byEvent.0[1:5, ]
 
@@ -342,14 +342,14 @@ byDamage.mm.top5
 ```
 
 
-```{r fig.asp=1}
+```{r fig.height=7, fig.width=10}
 # plots for economic losses
 r1 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Total impact on Economy") +
   geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25)) +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  theme(axis.text.x = element_text(angle = 40, hjust = 1))
 
 propdmg.bi <- byDamage.mm.top5$propdmg.m/1000
 
@@ -358,7 +358,7 @@ r2 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Economic impact on Property") +
   geom_text(aes(label=round(propdmg.bi, 0), vjust = -0.05)) + 
-theme(axis.text.x = element_text(angle = 30, hjust = 1))
+theme(axis.text.x = element_text(angle = 40, hjust = 1))
 
 cropdmg.bi <- byDamage.mm.top5$cropdmg.m/1000
 
@@ -367,7 +367,7 @@ r3 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Economic impact on Crops") +
   geom_text(aes(label=round(cropdmg.bi, 1), vjust = -0.05)) +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  theme(axis.text.x = element_text(angle = 40, hjust = 1))
 
 gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)
 grid.rect(gp=gpar(fill=NA))
