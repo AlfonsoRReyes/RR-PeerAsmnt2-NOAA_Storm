@@ -2,9 +2,9 @@
 title: "Analysis of weather impact on people and the economy"
 author: "Alfonso R. Reyes"
 output:
-  html_notebook: default
   html_document:
     keep_md: yes
+  html_notebook: default
 ---
 
 ```{r setup, include=FALSE, error=TRUE, message=FALSE}
@@ -135,6 +135,8 @@ These are the variable that we consider important for the analysis:
         REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS
 
+### Clean up the dataset
+We will transform the variable `BGN_DATE` from a factor to a date variable. We will later use it for our summaries. We will also take out some variables that are not relevant to our study.
 
 ```{r}
 # read the raw data from original source and load to object stormdata
@@ -152,12 +154,17 @@ stormdata <- stormdata.raw %>%
   mutate(REMARKS = as.character(REMARKS))
   
 # rm(stormdata.raw)     # release big dataset
-save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
+# save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
-```{r}
-str(stormdata)
+
+We have an observation ID with the variable `REFNUM`. We check if all its values are unique:
+```{r results='hold'}
+# REFNUM is the record id of the observation and is unique.
+length(unique(stormdata$REFNUM))
+range(unique(stormdata$REFNUM))
 ```
+
 
 There is a typo in one of the observations in the California flood 2005/2006. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted around 2006 New Year.
 
@@ -172,89 +179,52 @@ ca.flood <- stormdata %>%
   arrange(DATE) %>%
   select(REFNUM, DATE, STATE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
 
-ca.flood
+as_data_frame(ca.flood)
 ```
 
 
 Event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the 300 million dollars range. See paper USGS _____.
 
-
+Replace the "B" of billions by "M" (millons):
 ```{r}
 stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")] <- "M"
-```
-
-```{r}
 stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")]
 ```
 
 
+Add a new comment on correction to the `REMARKS` variable:
 ```{r}
+# Get the remark if stormdata.raw was loaded
 remarks.605943 <- stormdata[stormdata$REFNUM==605943, c("REMARKS")]
 remarks.605943
-```
 
-```{r}
 text.was <- "Major flooding continued into the early hours of January 1st, before the Napa River finally fell below flood stage and the water receeded. Flooding was severe in Downtown Napa from the Napa Creek and the City and Parks Department was hit with $6 million in damage alone. The City of Napa had 600 homes with moderate damage, 150 damaged businesses with costs of at least $70 million."
 
+# this is the new remark
 remarks.605943 <- paste("Correct typo in property damage from 'B' (biilion) to 'M' (million).", text.was, sep = "| ")
-remarks.605943
-```
 
-```{r}
+# impute the new remark
 stormdata[stormdata$REFNUM==605943, c("REMARKS")] <- remarks.605943
-```
 
-```{r}
 # save stormdata after corrections
 save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
-
-```{r}
-# write.csv(stormdata, file = paste(project.data, "stormdata.csv", sep = "/"))   # file too big > 350MB
-```
-
-
-```{r}
-str(stormdata)
-```
-
-
-```{r}
-# what are the states in the variable
-unique(stormdata$STATE)
-```
-
-
-To save memory we release now the 'stormdata.raw`  object.
-
-
-We have an observation ID with the variable `REFNUM`. We check if all its values are unique:
-
-```{r results='hold'}
-# REFNUM is the record id of the observation and is unique.
-length(unique(stormdata$REFNUM))
-range(unique(stormdata$REFNUM))
-```
 
 This is a view of the data frame that we will use in our analysis.
 ```{r}
 as_data_frame(stormdata)
 ```
 
-### Clean up the dataset
-We will transform the variable `BGN_DATE` from a factor to a date variable. We will later use it for our summaries. We will also take out some variables that are not relevant to our study.
+
 
 ```{r}
 load(paste(project.data, "stormdata.rda", sep = "/"))  # load the data
 ```
 
-
+Create a small data frame without the `REMARKS` variable.
 ```{r}
 stormdata.small <- stormdata %>% 
-  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, # take out
-           FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
-  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%    # convert to date
   select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE,     # reorder
          FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
 
@@ -267,18 +237,15 @@ as_data_frame(stormdata.small)
 # what is the worst weather event in 2005?
 worst <- stormdata.small %>%
   select(REFNUM, DATE, STATE, EVTYPE, PROPDMG, PROPDMGEXP) %>%
-  mutate(PROPDMG = ifelse(toupper(PROPDMGEXP) == "M", PROPDMG/1000, 
-                          ifelse(toupper(PROPDMGEXP) == "K", PROPDMG/1E6,
-                                 ifelse(toupper(PROPDMGEXP) == "B", PROPDMG, 0)))) %>%
-  #filter(PROPDMGEXP == "B") %>%
   arrange(desc(PROPDMG))
 
 worst
 ```
 
+Show some events with doubtful monetary units.
 ```{r}
 events <- stormdata %>%
-  select(REFNUM, REMARKS, EVTYPE) %>%
+  select(REFNUM, DATE, EVTYPE, REMARKS) %>%
   filter(REFNUM %in% c(605943, 577616, 577615, 581535))
 events
 ```
@@ -361,8 +328,7 @@ We will start by converting the monetary damages to a consistent units. We will 
 byDamage <- stormdata %>%
   select(EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
   group_by(EVTYPE) %>%
-  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))),      # clean the string
-         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP)))) %>%
+  # convert to unique dollar multiplier
   mutate(PROPDMG.K = ifelse(PROPDMGEXP == "K", PROPDMG * 1,
                      ifelse(PROPDMGEXP == "M", PROPDMG * 1000,
                      ifelse(PROPDMGEXP == "B", PROPDMG * 1E6, 0)))) %>%
@@ -375,6 +341,7 @@ byDamage
 We convert the thousands to millions of US$ and only one variable, the total economic damage.
 
 ```{r}
+# convert damage to million and put it on new variable
 byDamage.million <- byDamage %>%
   select(EVTYPE, PROPDMG.K, CROPDMG.K) %>%
   mutate(propdmg.m = PROPDMG.K /1000, cropdmg.m = CROPDMG.K / 1000) %>%
@@ -421,7 +388,7 @@ r2 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Economic impact on Property") +
-  geom_text(aes(label=round(propdmg.bi, 0), vjust = -0.25)) + 
+  geom_text(aes(label=round(propdmg.bi, 0), vjust = -0.05)) + 
 theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
 cropdmg.bi <- byDamage.mm.top5$cropdmg.m/1000
@@ -430,7 +397,7 @@ r3 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Economic impact on Crops") +
-  geom_text(aes(label=round(cropdmg.bi, 1), vjust = -0.25)) +
+  geom_text(aes(label=round(cropdmg.bi, 1), vjust = -0.05)) +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
 gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)
@@ -481,9 +448,7 @@ We save few datasets that are much smaller in size than the original dataset.
 ```{r}
 # By year, by event
 byYearEvent <- stormdata %>%
-  group_by(BGN_DATE, EVTYPE) %>%
-  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))), 
-         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP))))     %>%
+  group_by(DATE, EVTYPE) %>%
   mutate(PROPDMG.K = ifelse(PROPDMGEXP == "K", PROPDMG * 1,
                      ifelse(PROPDMGEXP == "M", PROPDMG * 1000,
                      ifelse(PROPDMGEXP == "B", PROPDMG * 1E6, 0)))) %>%
@@ -511,12 +476,12 @@ save(byYearEvent, file = paste(project.data, "byYearEvent.rda", sep = "/"))
 #load(paste(project.data, "byYearEvent.rda", sep = "/"))  # load the data
 
 byYearSummary <- byYearEvent %>%
-  mutate(year = year(mdy_hms(as.character(BGN_DATE)))) %>%
-  group_by(year) %>%
-  summarize(fatalities = sum(fatalities), 
+  mutate(year = year(DATE)) %>%           # get only the year
+  group_by(year) %>%                      # group by year
+  summarize(fatalities = sum(fatalities), # calculate total fatalities and injuries
             injuries = sum(injuries),
-            damage.mm = sum(propdmg.M) + sum(cropdmg.M),
-            damage.bb = damage.mm / 1000) %>%
+            damage.mm = round(sum(propdmg.M) + sum(cropdmg.M), 0), # total in millions
+            damage.bb = round(damage.mm / 1000, 2)) %>%       # total damage in billions
   arrange(desc(damage.bb))
 
 byYearSummary
@@ -576,5 +541,4 @@ These are the results:
 Maximum: 03. Can use panels.
 
 ## Code
-
 

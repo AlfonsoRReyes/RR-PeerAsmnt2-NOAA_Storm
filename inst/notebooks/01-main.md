@@ -11,13 +11,21 @@ Alfonso R. Reyes
 
 ## Synopsis
 <ten sentences>
+weather impact on the economy: property and crops.
+Does not take into account other effects such as defferred revenue, no income,
+Years recorded from 1950 till 2011.
+Investigate how much is the impact of the weather
+Impact on the popuplation: fatalities, injured.
+For the 1st question we will use the variables: EVTYPE, FATALITIES and INJURIES.
+For the 2nd question, we will use the variables: EVTYPE, PROPDMG, CROPDMG, PROPDMGEXP and CROPDMGEXP.
+Other analysis can later be performed such as if the weather effects have been improving or worsening, what states have suffered the largest impact, what counties have the highest economic loss, etc.
 
 
 
 ## Data Processing
 The data processing consists in the following steps:
 
-1. Download the raw data file from the internet using the `download.file` function.
+1. Download the raw data file from the internet theme(axis.text.x = element_text(angle = 30, hjust = 1))using the `download.file` function.
 2. Unpack the downloaded file (535+ MB) with the function `bunzip` into a CSV file named as `dataset.csv`.
 3. Load the CSV file in the object `stormdata.raw`: 902,297 observations and 37 variables.
 4. Perform a quick analysis of the dataset `stormdata.raw` before applying data transformations.
@@ -178,11 +186,177 @@ These are the variable that we consider important for the analysis:
 
 
 ```r
+# read the raw data from original source and load to object stormdata
+# stormdata will be cleaned up, some variables converted and some corrections made.
 stormdata <- stormdata.raw %>%
-  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
-
-rm(stormdata.raw)     # release big dataset
+  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
+         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS) %>%
+  # convert BGN_DATE to date format
+  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%    # convert to date
+  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
+         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS) %>%
+  # convert *EXP to uppercase and remove trailing spaces
+  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))),      # clean the string
+         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP)))) %>%
+  mutate(REMARKS = as.character(REMARKS))
+  
+# rm(stormdata.raw)     # release big dataset
+# save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
+
+
+```r
+str(stormdata)
+```
+
+```
+'data.frame':	902297 obs. of  13 variables:
+ $ REFNUM    : num  1 2 3 4 5 6 7 8 9 10 ...
+ $ DATE      : POSIXct, format: "1950-04-18" "1950-04-18" ...
+ $ STATE     : Factor w/ 72 levels "AK","AL","AM",..: 2 2 2 2 2 2 2 2 2 2 ...
+ $ COUNTY    : num  97 3 57 89 43 77 9 123 125 57 ...
+ $ COUNTYNAME: Factor w/ 29601 levels "","5NM E OF MACKINAC BRIDGE TO PRESQUE ISLE LT MI",..: 13513 1873 4598 10592 4372 10094 1973 23873 24418 4598 ...
+ $ EVTYPE    : Factor w/ 985 levels "?","ABNORMALLY DRY",..: 830 830 830 830 830 830 830 830 830 830 ...
+ $ FATALITIES: num  0 0 0 0 0 0 0 0 1 0 ...
+ $ INJURIES  : num  15 0 2 2 2 6 1 0 14 0 ...
+ $ PROPDMG   : num  25 2.5 25 2.5 2.5 2.5 2.5 2.5 25 25 ...
+ $ PROPDMGEXP: Factor w/ 17 levels "","-","?","+",..: 16 16 16 16 16 16 16 16 16 16 ...
+ $ CROPDMG   : num  0 0 0 0 0 0 0 0 0 0 ...
+ $ CROPDMGEXP: Factor w/ 7 levels "","?","0","2",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ REMARKS   : chr  "" "" "" "" ...
+```
+
+There is a typo in one of the observations in the California flood 2005/2006. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted around 2006 New Year.
+
+We are saving the correction in `stormdata.rda`. So, if the reader wants to reproduce the error, it wil be necessary to load the data from scratch, starting with downloading the file from the original source. The code above wll reproduce the steps necessary. To see the observation with the typo (it was writen "B" instead of "M" in the variable `PROPDMGEXP`), it corresponds to observation 605943 as identified by the variable `REFNUM`.
+
+
+
+```r
+# floods in California from Xmas 2005 to around New Year 2006
+# one record improperly entered as Billions instead of millions REFNUM=605943
+ca.flood <- stormdata %>%
+  filter(DATE >= "2005-12-25" & DATE <= "2006-01-02" & STATE == "CA" & PROPDMG > 0) %>%
+  arrange(DATE) %>%
+  select(REFNUM, DATE, STATE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS)
+
+as_data_frame(ca.flood)
+```
+
+```
+# A tibble: 59 × 8
+   REFNUM       DATE  STATE PROPDMG PROPDMGEXP CROPDMG CROPDMGEXP
+    <dbl>     <dttm> <fctr>   <dbl>     <fctr>   <dbl>     <fctr>
+1  567175 2005-12-26     CA    20.0          K       0           
+2  567179 2005-12-28     CA    55.9          M       0           
+3  567180 2005-12-28     CA    10.0          K       0           
+4  567184 2005-12-29     CA    60.8          M       8          M
+5  567185 2005-12-29     CA     5.0          K       0           
+6  567186 2005-12-30     CA     5.0          K       0           
+7  567187 2005-12-30     CA     5.0          K       0           
+8  567193 2005-12-30     CA     1.0          M       0           
+9  567197 2005-12-31     CA     1.0          M       0           
+10 567198 2005-12-31     CA     1.0          M       0           
+# ... with 49 more rows, and 1 more variables: REMARKS <chr>
+```
+
+
+Event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the 300 million dollars range. See paper USGS _____.
+
+
+
+```r
+stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")] <- "M"
+```
+
+
+```r
+stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")]
+```
+
+```
+[1] M
+Levels:  - ? + 0 1 2 3 4 5 6 7 8 B H K M
+```
+
+
+
+```r
+remarks.605943 <- stormdata[stormdata$REFNUM==605943, c("REMARKS")]
+remarks.605943
+```
+
+```
+[1] "Major flooding continued into the early hours of January 1st, before the Napa River finally fell below flood stage and the water receeded. Flooding was severe in Downtown Napa from the Napa Creek and the City and Parks Department was hit with $6 million in damage alone. The City of Napa had 600 homes with moderate damage, 150 damaged businesses with costs of at least $70 million."
+```
+
+
+```r
+text.was <- "Major flooding continued into the early hours of January 1st, before the Napa River finally fell below flood stage and the water receeded. Flooding was severe in Downtown Napa from the Napa Creek and the City and Parks Department was hit with $6 million in damage alone. The City of Napa had 600 homes with moderate damage, 150 damaged businesses with costs of at least $70 million."
+
+remarks.605943 <- paste("Correct typo in property damage from 'B' (biilion) to 'M' (million).", text.was, sep = "| ")
+remarks.605943
+```
+
+```
+[1] "Correct typo in property damage from 'B' (biilion) to 'M' (million).| Major flooding continued into the early hours of January 1st, before the Napa River finally fell below flood stage and the water receeded. Flooding was severe in Downtown Napa from the Napa Creek and the City and Parks Department was hit with $6 million in damage alone. The City of Napa had 600 homes with moderate damage, 150 damaged businesses with costs of at least $70 million."
+```
+
+
+```r
+stormdata[stormdata$REFNUM==605943, c("REMARKS")] <- remarks.605943
+```
+
+
+```r
+# save stormdata after corrections
+save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
+```
+
+
+
+```r
+# write.csv(stormdata, file = paste(project.data, "stormdata.csv", sep = "/"))   # file too big > 350MB
+```
+
+
+
+```r
+str(stormdata)
+```
+
+```
+'data.frame':	902297 obs. of  13 variables:
+ $ REFNUM    : num  1 2 3 4 5 6 7 8 9 10 ...
+ $ DATE      : POSIXct, format: "1950-04-18" "1950-04-18" ...
+ $ STATE     : Factor w/ 72 levels "AK","AL","AM",..: 2 2 2 2 2 2 2 2 2 2 ...
+ $ COUNTY    : num  97 3 57 89 43 77 9 123 125 57 ...
+ $ COUNTYNAME: Factor w/ 29601 levels "","5NM E OF MACKINAC BRIDGE TO PRESQUE ISLE LT MI",..: 13513 1873 4598 10592 4372 10094 1973 23873 24418 4598 ...
+ $ EVTYPE    : Factor w/ 985 levels "?","ABNORMALLY DRY",..: 830 830 830 830 830 830 830 830 830 830 ...
+ $ FATALITIES: num  0 0 0 0 0 0 0 0 1 0 ...
+ $ INJURIES  : num  15 0 2 2 2 6 1 0 14 0 ...
+ $ PROPDMG   : num  25 2.5 25 2.5 2.5 2.5 2.5 2.5 25 25 ...
+ $ PROPDMGEXP: Factor w/ 17 levels "","-","?","+",..: 16 16 16 16 16 16 16 16 16 16 ...
+ $ CROPDMG   : num  0 0 0 0 0 0 0 0 0 0 ...
+ $ CROPDMGEXP: Factor w/ 7 levels "","?","0","2",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ REMARKS   : chr  "" "" "" "" ...
+```
+
+
+
+```r
+# what are the states in the variable
+unique(stormdata$STATE)
+```
+
+```
+ [1] AL AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN
+[24] MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA
+[47] WA WV WI WY PR AK ST AS GU MH VI AM LC PH GM PZ AN LH LM LE LS SL LO
+[70] PM PK XX
+72 Levels: AK AL AM AN AR AS AZ CA CO CT DC DE FL GA GM GU HI IA ID ... XX
+```
+
 
 To save memory we release now the 'stormdata.raw`  object.
 
@@ -209,40 +383,6 @@ as_data_frame(stormdata)
 
 ```
 # A tibble: 902,297 × 13
-   REFNUM           BGN_DATE  STATE COUNTY COUNTYNAME  EVTYPE FATALITIES
-    <dbl>             <fctr> <fctr>  <dbl>     <fctr>  <fctr>      <dbl>
-1       1  4/18/1950 0:00:00     AL     97     MOBILE TORNADO          0
-2       2  4/18/1950 0:00:00     AL      3    BALDWIN TORNADO          0
-3       3  2/20/1951 0:00:00     AL     57    FAYETTE TORNADO          0
-4       4   6/8/1951 0:00:00     AL     89    MADISON TORNADO          0
-5       5 11/15/1951 0:00:00     AL     43    CULLMAN TORNADO          0
-6       6 11/15/1951 0:00:00     AL     77 LAUDERDALE TORNADO          0
-7       7 11/16/1951 0:00:00     AL      9     BLOUNT TORNADO          0
-8       8  1/22/1952 0:00:00     AL    123 TALLAPOOSA TORNADO          0
-9       9  2/13/1952 0:00:00     AL    125 TUSCALOOSA TORNADO          1
-10     10  2/13/1952 0:00:00     AL     57    FAYETTE TORNADO          0
-# ... with 902,287 more rows, and 6 more variables: INJURIES <dbl>,
-#   PROPDMG <dbl>, PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>,
-#   REMARKS <fctr>
-```
-
-### Clean up the dataset
-We will transform the variable `BGN_DATE` from a factor to a date variable. We will later use it for our summaries. We will also take out some variables that are not relevant to our study.
-
-
-```r
-stormdata.small <- stormdata %>% 
-  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, # take out
-           FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
-  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%    # convert to date
-  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE,     # reorder
-         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
-
-as_data_frame(stormdata.small)
-```
-
-```
-# A tibble: 902,297 × 12
    REFNUM       DATE  STATE COUNTY COUNTYNAME  EVTYPE FATALITIES INJURIES
     <dbl>     <dttm> <fctr>  <dbl>     <fctr>  <fctr>      <dbl>    <dbl>
 1       1 1950-04-18     AL     97     MOBILE TORNADO          0       15
@@ -255,8 +395,91 @@ as_data_frame(stormdata.small)
 8       8 1952-01-22     AL    123 TALLAPOOSA TORNADO          0        0
 9       9 1952-02-13     AL    125 TUSCALOOSA TORNADO          1       14
 10     10 1952-02-13     AL     57    FAYETTE TORNADO          0        0
-# ... with 902,287 more rows, and 4 more variables: PROPDMG <dbl>,
-#   PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>
+# ... with 902,287 more rows, and 5 more variables: PROPDMG <dbl>,
+#   PROPDMGEXP <fctr>, CROPDMG <dbl>, CROPDMGEXP <fctr>, REMARKS <chr>
+```
+
+### Clean up the dataset
+We will transform the variable `BGN_DATE` from a factor to a date variable. We will later use it for our summaries. We will also take out some variables that are not relevant to our study.
+
+
+```r
+load(paste(project.data, "stormdata.rda", sep = "/"))  # load the data
+```
+
+
+
+```r
+stormdata.small <- stormdata %>% 
+  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, # take out
+           FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
+  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%    # convert to date
+  select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE,     # reorder
+         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
+```
+
+```
+Error in eval(expr, envir, enclos): object 'BGN_DATE' not found
+```
+
+```r
+as_data_frame(stormdata.small)
+```
+
+```
+Error in as_data_frame(stormdata.small): object 'stormdata.small' not found
+```
+
+## Other questions
+### what is the worst weather event in 2005?
+
+```r
+# what is the worst weather event in 2005?
+worst <- stormdata.small %>%
+  select(REFNUM, DATE, STATE, EVTYPE, PROPDMG, PROPDMGEXP) %>%
+  mutate(PROPDMG = ifelse(toupper(PROPDMGEXP) == "M", PROPDMG/1000, 
+                          ifelse(toupper(PROPDMGEXP) == "K", PROPDMG/1E6,
+                                 ifelse(toupper(PROPDMGEXP) == "B", PROPDMG, 0)))) %>%
+  #filter(PROPDMGEXP == "B") %>%
+  arrange(desc(PROPDMG))
+```
+
+```
+Error in eval(expr, envir, enclos): object 'stormdata.small' not found
+```
+
+```r
+worst
+```
+
+```
+Error in eval(expr, envir, enclos): object 'worst' not found
+```
+
+
+```r
+events <- stormdata %>%
+  select(REFNUM, REMARKS, EVTYPE) %>%
+  filter(REFNUM %in% c(605943, 577616, 577615, 581535))
+events
+```
+
+```
+  REFNUM
+1 577615
+2 577616
+3 581535
+4 605943
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  REMARKS
+1 Hurricane Katrina was one of the strongest and most destructive hurricanes on record to impact the coast of the United States.  It will likely be recorded as one the worst natural disaster in the history of the United States to date resulting in catastrophic damage and numerous casualties in southeast Louisiana and along the Mississippi coast.  Damage and casualties resulting from Hurricane Katrina extended as far east as Alabama and the panhandle of Florida.  Katrina developed from a tropical depression southeast of the Bahamas on August 24th.  After moving through the Bahamas as a tropical storm, Katrina strengthened to a category 1 hurricane prior to landfall in south Florida around the Miami area on the 25th of August.  Katrina crossed south Florida and entered the Gulf of Mexico and began to strengthen.  Hurricane Katrina strengthened to a category 5 storm on August 28th about 250 miles south southeast of the mouth of the Mississippi River with winds reaching their peak intensity of 175 mph and a central pressure of 902 mb.  Post event analysis by the National Hurricane Center indicates that Katrina weakened slightly before making landfall as a strong category 3 storm in initial landfall in lower Plaquemines Parish. Maximum sustained winds were estimated at 110 knots or 127 mph and a central pressure of 920 mb around 610 AM CDT on August 29th in southeast Louisiana just south of Buras in Plaquemines Parish.  The storm continued on a north northeast track with the center passing about 40 miles southeast of New Orleans with a second landfall occurring near the Louisiana and Mississippi border around 945 AM CDT as a Category 3 hurricane on the Saffir Simpson scale with maximum sustained winds estimated around 105 knots or 121 mph.  Katrina continued to weaken as it moved north northeast across Mississippi during the day, but remained at hurricane strength 100 miles inland near Laurel, Mississippi.  Katrina weakened to a tropical depression near Clarksville, Tennessee on August 30th.\n\nDamage in southeast Louisiana, especially in the New Orleans area and the coastal parishes, was catastrophic.  Hurricane protection levees and floodwalls were overtopped and/or  breached resulting in widespread and deep flooding of homes and businesses.  Much of Orleans and Plaquemines Parishes and nearly all of St. Bernard Parish were flooded by storm surge. Approximately 80 percent of the city of New Orleans was flooded.  Thousands of people were stranded by the flood waters in homes and buildings and on rooftops for several days and had to be rescued by boat and helicopter. In Jefferson Parish, levees were not compromised, however many homes were flooded by either heavy rain overwhelming limited pumping capacity or storm surge water moving through in-operable pumps into the parish.  Severe storm surge damage also occurred along the north shore of Lake Pontchartrain from Mandeville to Slidell with storm surge water moving inland as far as Old Towne Slidell with water up to 6 feet deep in some locations. Hurricane force winds also caused damage to roofs, power lines, and downed trees. Windows were broken in large buildings in the metro New Orleans area from wind and wind driven debris. In areas away from storm surge flooding, wind damage was widespread with fallen trees taking a heavy toll on houses and power lines, especially over St. Tammany and Washington Parishes.  Excluding losses covered by the Federal Flood Insurance Program, insured property losses in Louisiana were estimated at 22.6 billion dollars. Overall uninsured and insured losses combined were estimated to exceed 100 billion dollars along the entire Gulf Coast.\n\nFatalities occurring in Louisiana as a result of Hurricane Katrina numbered approximately 1097 people as of late June 2006. The majority of the victims were in the New Orleans area. 480 other Louisiana residents died in other states after evacuating..\n Detailed information on the deaths, locations, and indirect or direct fatalities will be described in updates to Storm Data. \n\nDue to the failure of power and equipment prior to the peak of the storm, data for wind, storm surge, pressure, and rainfall are incomplete.  A university portable weather unit measured the lowest pressure of 920.2 mb near Buras around 0616 AM AM CDT on Aug 29th. with 934 mb being measured at the National Weather Service Office in Slidell at 938 AM CDT. \n\nThe highest wind gust recorded in Louisiana and the adjacent coastal waters was 99 knots (114 mph) at the Grand Isle CMAN station (338 AM CDT on August 29th) before the gage failed, though higher wind gusts certainly occurred. While most of the metro New Orleans escaped the extreme winds, the extreme eastern portions of the metro area from St Bernard Parish into extreme east New Orleans experienced the western portion of the hurricane eyewall. Wind gusts between 120 to 125 mph were recorded at a couple of locations in East New Orleans. Wind gust to hurricane force (64 kt or 74 mph) were also recorded at New Orleans Louis Armstrong Intl Airport by an FAA wind instrument. In eastern St. Tammany Parish, wind gusts to 87 knots (100) mph were measured at Slidell by a wind tower deployed by a university. An estimated wind gust of 105 kt (120 mph) was taken at a hospital in Slidell. \n\nPost storm high water surveys of the area conducted by FEMA indicated the following storm surge estimates:  Orleans Parish - 12-15 feet in east New Orleans to 9 to 12 feet along the Lakefront; St. Bernard Parish - 14 to 17 feet; Jefferson Parish - 6 to 9 feet along the lakefront to 5 to 8 feet from Lafitte to Grand Isle; Plaquemines Parish - 15 to 17 feet; St. Tammany Parish - 11 to 16 feet in southeast portion to 7 to 10 feet in western portion. All storm surge heights are still water elevations referenced to NAVD88 datum.   \n\nStorm total rainfall amounts generally ranged from 7 to 14 inches with lower amounts observed farther west toward the Atchafalaya River.  A rainfall total of 11.63 inches was measured at the National Weather Service Office in Slidell.
+2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             Storm surge damage in southeast Louisiana, especially in the New Orleans area and the coastal parishes, was catastrophic.  Hurricane protection levees and floodwalls were overtopped and/or breached resulting in widespread and deep flooding of homes and businesses.  Much of Orleans and Plaquemines Parishes and nearly all of St. Bernard Parish were flooded by storm surge. Approximately 80 percent of the city of New Orleans was flooded.  Thousands of people were stranded by the flood waters in homes and buildings and on rooftops for several days and had to be rescued by boat and helicopter. In Jefferson Parish, levees were not compromised, however many homes were flooded by either heavy rain overwhelming limited pumping capacity or storm surge water moving through in-operable pumps into the parish.  Severe storm surge damage also occurred along the north shore of Lake Pontchartrain from Mandeville to Slidell with storm surge water moving inland as far as Old Towne Slidell with water up to 6 feet deep in some locations\n\nPost storm high water surveys of the area conducted by FEMA indicated the following storm surge estimates:  Orleans Parish - 12-15 feet in east New Orleans to 9 to 12 feet along the Lakefront; St. Bernard Parish - 14 to 17 feet; Jefferson Parish - 6 to 9 feet along the lakefront to 5 to 8 feet from Lafitte to Grand Isle; Plaquemines Parish - 15 to 17 feet; St. Tammany Parish - 11 to 16 feet in southeast portion to 7 to 10 feet in western portion. All storm surge heights are still water elevations referenced to NAVD88 datum.
+3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Storm surge damage across coastal Mississippi was catastrophic and approached or exceeded the surge associated with Hurricane Camille and impacted a much more extensive area.  Almost total destruction was observed along the immediate coast in Hancock and Harrison Counties with storm surge damage extending north along bays and bayous to Interstate Highway 10 in some instances.  Thousands of homes and businesses were destroyed by the storm surge. Most tide gages were destroyed by the storm surge so storm surge was determined primarily by post storm high water mark surveys conducted by FEMA. An estimated storm surge of approximately 23.0 feet occurred at the Hancock County EOC operations area in Waveland, and the high water mark measured on the Jackson County EOC building in Pascagoula was 16.1 feet.  Preliminary estimates of storm surge along the Mississippi Coast include Hancock County 19-25 ft, Harrison County 19-25 feet, Jackson County 17-21 ft. Wave action on top of the storm surge enhanced the damage in many area.  All storm surge heights are still water elevations referenced to NAVD88 datum.
+4                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Correct typo in property damage from 'B' (biilion) to 'M' (million).| Major flooding continued into the early hours of January 1st, before the Napa River finally fell below flood stage and the water receeded. Flooding was severe in Downtown Napa from the Napa Creek and the City and Parks Department was hit with $6 million in damage alone. The City of Napa had 600 homes with moderate damage, 150 damaged businesses with costs of at least $70 million.
+             EVTYPE
+1 HURRICANE/TYPHOON
+2       STORM SURGE
+3       STORM SURGE
+4             FLOOD
 ```
 
 
@@ -269,8 +492,13 @@ If we save the data frame `stormdata` as an .rda file the size is 46 megabytes. 
 save(stormdata.small, file = paste(project.data, "stormdata.small.rda", sep = "/"))
 ```
 
+```
+Error in save(stormdata.small, file = paste(project.data, "stormdata.small.rda", : object 'stormdata.small' not found
+```
 
-### Event Types `EVTYPE`
+
+### The recorded weather events
+Event Types `EVTYPE`
 
 
 ```r
@@ -385,7 +613,7 @@ gridExtra::grid.arrange(p1, p2)
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-31-1.png)<!-- -->
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
 
@@ -399,14 +627,14 @@ We will start by converting the monetary damages to a consistent units. We will 
 byDamage <- stormdata %>%
   select(EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
   group_by(EVTYPE) %>%
-  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))), 
+  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))),      # clean the string
          CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP)))) %>%
   mutate(PROPDMG.K = ifelse(PROPDMGEXP == "K", PROPDMG * 1,
-                                    ifelse(PROPDMGEXP == "M", PROPDMG * 1000,
-                                           ifelse(PROPDMGEXP == "B", PROPDMG * 1E6, 0)))) %>%
+                     ifelse(PROPDMGEXP == "M", PROPDMG * 1000,
+                     ifelse(PROPDMGEXP == "B", PROPDMG * 1E6, 0)))) %>%
   mutate(CROPDMG.K = ifelse(CROPDMGEXP == "K", CROPDMG * 1,
-                                    ifelse(CROPDMGEXP == "M", CROPDMG * 1000,
-                                           ifelse(CROPDMGEXP == "B", CROPDMG * 1E6, 0))))
+                     ifelse(CROPDMGEXP == "M", CROPDMG * 1000,
+                     ifelse(CROPDMGEXP == "B", CROPDMG * 1E6, 0))))
 byDamage
 ```
 
@@ -433,8 +661,37 @@ We convert the thousands to millions of US$ and only one variable, the total eco
 
 
 ```r
+byDamage.million <- byDamage %>%
+  select(EVTYPE, PROPDMG.K, CROPDMG.K) %>%
+  mutate(propdmg.m = PROPDMG.K /1000, cropdmg.m = CROPDMG.K / 1000) %>%
+  summarize(propdmg = sum(propdmg.m), cropdmg = sum(cropdmg.m)) %>%
+  mutate(damage.total = propdmg + cropdmg) %>%
+  arrange(desc(damage.total))
+
+byDamage.million
+```
+
+```
+# A tibble: 985 × 4
+              EVTYPE   propdmg    cropdmg damage.total
+              <fctr>     <dbl>      <dbl>        <dbl>
+1  HURRICANE/TYPHOON 69305.840  2607.8728    71913.713
+2            TORNADO 56937.160   414.9531    57352.114
+3        STORM SURGE 43323.536     0.0050    43323.541
+4              FLOOD 29772.710  5661.9685    35434.678
+5               HAIL 15732.267  3025.9545    18758.221
+6        FLASH FLOOD 16140.812  1421.3171    17562.129
+7            DROUGHT  1046.106 13972.5660    15018.672
+8          HURRICANE 11868.319  2741.9100    14610.229
+9        RIVER FLOOD  5118.945  5029.4590    10148.405
+10         ICE STORM  3944.928  5022.1135     8967.041
+# ... with 975 more rows
+```
+
+
+
+```r
 byDamage.mm <- byDamage %>%
-  
   summarize(propdmg.k = sum(PROPDMG.K), cropdmg.k = sum(CROPDMG.K)) %>%
   mutate(propdmg.m = propdmg.k / 1000, cropdmg.m = cropdmg.k / 1000) %>%
   select(EVTYPE, propdmg.m, cropdmg.m) %>%
@@ -448,18 +705,18 @@ byDamage.mm
 
 ```
 # A tibble: 985 × 5
-              EVTYPE  propdmg.m  cropdmg.m totaldmg.mm totaldmg.bi
-              <fctr>      <dbl>      <dbl>       <dbl>       <dbl>
-1              FLOOD 144657.710  5661.9685  150319.678  150.319678
-2  HURRICANE/TYPHOON  69305.840  2607.8728   71913.713   71.913713
-3            TORNADO  56937.160   414.9531   57352.114   57.352114
-4        STORM SURGE  43323.536     0.0050   43323.541   43.323541
-5               HAIL  15732.267  3025.9545   18758.221   18.758221
-6        FLASH FLOOD  16140.812  1421.3171   17562.129   17.562129
-7            DROUGHT   1046.106 13972.5660   15018.672   15.018672
-8          HURRICANE  11868.319  2741.9100   14610.229   14.610229
-9        RIVER FLOOD   5118.945  5029.4590   10148.405   10.148404
-10         ICE STORM   3944.928  5022.1135    8967.041    8.967041
+              EVTYPE propdmg.m  cropdmg.m totaldmg.mm totaldmg.bi
+              <fctr>     <dbl>      <dbl>       <dbl>       <dbl>
+1  HURRICANE/TYPHOON 69305.840  2607.8728   71913.713   71.913713
+2            TORNADO 56937.160   414.9531   57352.114   57.352114
+3        STORM SURGE 43323.536     0.0050   43323.541   43.323541
+4              FLOOD 29772.710  5661.9685   35434.678   35.434678
+5               HAIL 15732.267  3025.9545   18758.221   18.758221
+6        FLASH FLOOD 16140.812  1421.3171   17562.129   17.562129
+7            DROUGHT  1046.106 13972.5660   15018.672   15.018672
+8          HURRICANE 11868.319  2741.9100   14610.229   14.610229
+9        RIVER FLOOD  5118.945  5029.4590   10148.405   10.148404
+10         ICE STORM  3944.928  5022.1135    8967.041    8.967041
 # ... with 975 more rows
 ```
 
@@ -472,59 +729,54 @@ byDamage.mm.top5
 
 ```
 # A tibble: 10 × 5
-              EVTYPE  propdmg.m  cropdmg.m totaldmg.mm totaldmg.bi
-              <fctr>      <dbl>      <dbl>       <dbl>       <dbl>
-1              FLOOD 144657.710  5661.9685  150319.678  150.319678
-2  HURRICANE/TYPHOON  69305.840  2607.8728   71913.713   71.913713
-3            TORNADO  56937.160   414.9531   57352.114   57.352114
-4        STORM SURGE  43323.536     0.0050   43323.541   43.323541
-5               HAIL  15732.267  3025.9545   18758.221   18.758221
-6        FLASH FLOOD  16140.812  1421.3171   17562.129   17.562129
-7            DROUGHT   1046.106 13972.5660   15018.672   15.018672
-8          HURRICANE  11868.319  2741.9100   14610.229   14.610229
-9        RIVER FLOOD   5118.945  5029.4590   10148.405   10.148404
-10         ICE STORM   3944.928  5022.1135    8967.041    8.967041
+              EVTYPE propdmg.m  cropdmg.m totaldmg.mm totaldmg.bi
+              <fctr>     <dbl>      <dbl>       <dbl>       <dbl>
+1  HURRICANE/TYPHOON 69305.840  2607.8728   71913.713   71.913713
+2            TORNADO 56937.160   414.9531   57352.114   57.352114
+3        STORM SURGE 43323.536     0.0050   43323.541   43.323541
+4              FLOOD 29772.710  5661.9685   35434.678   35.434678
+5               HAIL 15732.267  3025.9545   18758.221   18.758221
+6        FLASH FLOOD 16140.812  1421.3171   17562.129   17.562129
+7            DROUGHT  1046.106 13972.5660   15018.672   15.018672
+8          HURRICANE 11868.319  2741.9100   14610.229   14.610229
+9        RIVER FLOOD  5118.945  5029.4590   10148.405   10.148404
+10         ICE STORM  3944.928  5022.1135    8967.041    8.967041
 ```
 
 
 ```r
-ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)) +
+# plots for economic losses
+r1 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -totaldmg.bi), y = totaldmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Total impact on Economy") +
   geom_text(aes(label=round(totaldmg.bi, 0), vjust = -0.25)) +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
-```
 
-![](01-main_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
-
-
-```r
 propdmg.bi <- byDamage.mm.top5$propdmg.m/1000
 
-ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg.bi)) +
+r2 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -propdmg.bi), y = propdmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Economic impact on Property") +
   geom_text(aes(label=round(propdmg.bi, 0), vjust = -0.25)) + 
 theme(axis.text.x = element_text(angle = 30, hjust = 1))
-```
 
-![](01-main_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
-
-
-```r
 cropdmg.bi <- byDamage.mm.top5$cropdmg.m/1000
 
-ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg.bi)) +
+r3 <- ggplot(byDamage.mm.top5, aes(x = reorder(EVTYPE, -cropdmg.bi), y = cropdmg.bi)) +
   geom_bar(stat = "identity") +
   labs(y = "Billions US$", x = "Weather event") +
   ggtitle("Economic impact on Crops") +
   geom_text(aes(label=round(cropdmg.bi, 1), vjust = -0.25)) +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+gridExtra::grid.arrange(r1, arrangeGrob(r2, r3), ncol=2)
+grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-36-1.png)<!-- -->
+
 
 ### Multiple identifiers for monetary units
 There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
@@ -562,18 +814,18 @@ summary(byDamage)
                EVTYPE          PROPDMG          PROPDMGEXP    
  HAIL             :288661   Min.   :   0.00          :465934  
  TSTM WIND        :219940   1st Qu.:   0.00   K      :424665  
- THUNDERSTORM WIND: 82563   Median :   0.00   M      : 11337  
+ THUNDERSTORM WIND: 82563   Median :   0.00   M      : 11338  
  TORNADO          : 60652   Mean   :  12.06   0      :   216  
- FLASH FLOOD      : 54277   3rd Qu.:   0.50   B      :    40  
+ FLASH FLOOD      : 54277   3rd Qu.:   0.50   B      :    39  
  FLOOD            : 25326   Max.   :5000.00   5      :    28  
  (Other)          :170878                     (Other):    77  
     CROPDMG        CROPDMGEXP   PROPDMG.K          CROPDMG.K      
- Min.   :  0.000    :618413   Min.   :0.00e+00   Min.   :      0  
- 1st Qu.:  0.000   M:  1995   1st Qu.:0.00e+00   1st Qu.:      0  
- Median :  0.000   K:281853   Median :0.00e+00   Median :      0  
- Mean   :  1.527   0:    19   Mean   :4.74e+02   Mean   :     54  
- 3rd Qu.:  0.000   B:     9   3rd Qu.:0.00e+00   3rd Qu.:      0  
- Max.   :990.000   ?:     7   Max.   :1.15e+08   Max.   :5000000  
+ Min.   :  0.000    :618413   Min.   :       0   Min.   :      0  
+ 1st Qu.:  0.000   M:  1995   1st Qu.:       0   1st Qu.:      0  
+ Median :  0.000   K:281853   Median :       0   Median :      0  
+ Mean   :  1.527   0:    19   Mean   :     346   Mean   :     54  
+ 3rd Qu.:  0.000   B:     9   3rd Qu.:       0   3rd Qu.:      0  
+ Max.   :990.000   ?:     7   Max.   :31300000   Max.   :5000000  
                    2:     1                                       
 ```
 
@@ -615,27 +867,18 @@ byYearEvent <- stormdata %>%
             propdmg.M  = sum(PROPDMG.K) / 1000,
             cropdmg.M  = sum(CROPDMG.K) /1000
             )
+```
 
+```
+Error in resolve_vars(new_groups, tbl_vars(.data)): unknown variable to group by : BGN_DATE
+```
+
+```r
 byYearEvent
 ```
 
 ```
-Source: local data frame [83,144 x 6]
-Groups: BGN_DATE [?]
-
-             BGN_DATE    EVTYPE fatalities injuries propdmg.M cropdmg.M
-               <fctr>    <fctr>      <dbl>    <dbl>     <dbl>     <dbl>
-1  10/10/1954 0:00:00   TORNADO          0        0    0.0250         0
-2  10/10/1958 0:00:00   TORNADO          2        7    0.2500         0
-3  10/10/1958 0:00:00 TSTM WIND          0        0    0.0000         0
-4  10/10/1959 0:00:00      HAIL          0        0    0.0000         0
-5  10/10/1959 0:00:00   TORNADO          0        0    0.2750         0
-6  10/10/1959 0:00:00 TSTM WIND          0        0    0.0000         0
-7  10/10/1960 0:00:00      HAIL          0        0    0.0000         0
-8  10/10/1961 0:00:00   TORNADO          0        0    0.0025         0
-9  10/10/1962 0:00:00      HAIL          0        0    0.0000         0
-10 10/10/1962 0:00:00   TORNADO          0        0    0.0250         0
-# ... with 83,134 more rows
+Error in eval(expr, envir, enclos): object 'byYearEvent' not found
 ```
 
 
@@ -645,11 +888,15 @@ Groups: BGN_DATE [?]
 save(byYearEvent, file = paste(project.data, "byYearEvent.rda", sep = "/"))
 ```
 
+```
+Error in save(byYearEvent, file = paste(project.data, "byYearEvent.rda", : object 'byYearEvent' not found
+```
+
 ### Have the number of fatalities and injuries increased over the years?
 
 
 ```r
-load(paste(project.data, "byYearEvent.rda", sep = "/"))  # load the data
+#load(paste(project.data, "byYearEvent.rda", sep = "/"))  # load the data
 
 byYearSummary <- byYearEvent %>%
   mutate(year = year(mdy_hms(as.character(BGN_DATE)))) %>%
@@ -657,28 +904,24 @@ byYearSummary <- byYearEvent %>%
   summarize(fatalities = sum(fatalities), 
             injuries = sum(injuries),
             damage.mm = sum(propdmg.M) + sum(cropdmg.M),
-            damage.bb = damage.mm / 1000
-            )
+            damage.bb = damage.mm / 1000) %>%
+  arrange(desc(damage.bb))
+```
 
+```
+Error in eval(expr, envir, enclos): object 'byYearEvent' not found
+```
+
+```r
 byYearSummary
 ```
 
 ```
-# A tibble: 62 × 5
-    year fatalities injuries damage.mm  damage.bb
-   <dbl>      <dbl>    <dbl>     <dbl>      <dbl>
-1   1950         70      659  34.48165 0.03448165
-2   1951         34      524  65.50599 0.06550599
-3   1952        230     1915  94.10224 0.09410224
-4   1953        519     5131 596.10470 0.59610470
-5   1954         36      715  85.80532 0.08580532
-6   1955        129      926  82.66063 0.08266063
-7   1956         83     1355 116.91235 0.11691235
-8   1957        193     1976 224.38889 0.22438889
-9   1958         67      535 128.99461 0.12899461
-10  1959         58      734  87.45304 0.08745304
-# ... with 52 more rows
+Error in eval(expr, envir, enclos): object 'byYearSummary' not found
 ```
+
+There are two years with the most economic damage: 2006 and 2005.
+
 
 
 ```r
@@ -687,24 +930,49 @@ q1 <- ggplot(byYearSummary, aes(x = year, y = damage.bb)) +
   ggtitle("Impact on economy 1950-2011") + 
   labs(y = "Billions US$") +
   theme(plot.title = element_text(hjust=0.5))
+```
+
+```
+Error in ggplot(byYearSummary, aes(x = year, y = damage.bb)): object 'byYearSummary' not found
+```
+
+```r
 q2 <- ggplot(byYearSummary, aes(x = year, y = fatalities)) +
   geom_point() +
   ggtitle("impact on human life, 1950-2011") +
   labs(y = "Fatalities") +
     theme(plot.title = element_text(hjust=0.5))
+```
 
+```
+Error in ggplot(byYearSummary, aes(x = year, y = fatalities)): object 'byYearSummary' not found
+```
+
+```r
 q3 <- ggplot(byYearSummary, aes(x = year, y = injuries)) +
   geom_point() +
   ggtitle("impact on health, 1950-2011") +
   labs(y = "Injured") +
     theme(plot.title = element_text(hjust=0.5))
-  
+```
 
+```
+Error in ggplot(byYearSummary, aes(x = year, y = injuries)): object 'byYearSummary' not found
+```
+
+```r
 gridExtra::grid.arrange(q1, arrangeGrob(q2, q3), ncol=2)
+```
+
+```
+Error in arrangeGrob(...): object 'q1' not found
+```
+
+```r
 grid.rect(gp=gpar(fill=NA))
 ```
 
-![](01-main_files/figure-html/unnamed-chunk-31-1.png)<!-- -->
+![](01-main_files/figure-html/unnamed-chunk-44-1.png)<!-- -->
 
 
 
@@ -714,12 +982,29 @@ grid.rect(gp=gpar(fill=NA))
 save(byYearSummary, file = paste(project.data, "byYearSummary.rda", sep = "/"))
 ```
 
+```
+Error in save(byYearSummary, file = paste(project.data, "byYearSummary.rda", : object 'byYearSummary' not found
+```
+
 ## Results
 <present the results here>
+These are the results:
+
+1. Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
+
+2. In the case of injuries caused to humans tornados, excessive heat, lightning, heat and flash floods are the events causing them in descending order.
+
+3. On the economic impact, we classified the weather events from the most damaging to the economy to the less. They are: flood, hurricane/typhoon, tornados, storm surge, hail, flash flodd, drought, river flood and ice storms. The economic impact totals both, property and crops.
+
+4. Other additional findings were that the weather events have been increasing its damage to the economy and for the population in general. From the plots, we can see that from 1992 onwards, the effects have been disastrous. The losses in the economic have ascended from few millions to tens or hundreds of billions! On the population we can appreciate an increase in mortality from about a hundred in average until the end of the 80s to five hundred to fifteen hundred fatalities. 
+
+5. Injuries have had less devastating effect but has not duplicated or triplicated as in the economy or mortality. Additional studies may be advisable to find the reason to the control in injuries in humans because of the weather events. We can notice some cyclical shape on the injuries accross the years but the slope is mildly ascending.
+
+6. There are a couple of major weather events in 2005 and 2006 where we can see a drastic impact on the economy of 100 and 125 billion dollars. One was Katrina affecting several states in the Southm, and the other was a major flood in California.
+
 
 ## Figures
 Maximum: 03. Can use panels.
 
 ## Code
-
 
