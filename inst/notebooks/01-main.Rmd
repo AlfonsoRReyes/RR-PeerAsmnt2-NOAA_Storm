@@ -476,7 +476,7 @@ save(byYearEvent, file = paste(project.data, "byYearEvent.rda", sep = "/"))
 #load(paste(project.data, "byYearEvent.rda", sep = "/"))  # load the data
 
 byYearSummary <- byYearEvent %>%
-  mutate(year = year(mdy_hms(as.character(BGN_DATE)))) %>%
+  mutate(year = year(DATE)) %>%
   group_by(year) %>%
   summarize(fatalities = sum(fatalities), 
             injuries = sum(injuries),
