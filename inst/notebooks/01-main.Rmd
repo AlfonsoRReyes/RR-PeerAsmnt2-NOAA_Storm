@@ -242,9 +242,10 @@ worst <- stormdata.small %>%
 worst
 ```
 
+Show some events with doubtful monetary units.
 ```{r}
 events <- stormdata %>%
-  select(REFNUM, REMARKS, EVTYPE) %>%
+  select(REFNUM, DATE, EVTYPE, REMARKS) %>%
   filter(REFNUM %in% c(605943, 577616, 577615, 581535))
 events
 ```
