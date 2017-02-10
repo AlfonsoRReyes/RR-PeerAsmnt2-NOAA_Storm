@@ -171,9 +171,6 @@ ca.flood
 
 Event occurring in January 2006 (id=605943) has been improperly recorded as economic losses of 150 Billion US dollars. After some research we found that the numbers are more in the 300 million dollars range. See paper USGS _____.
 
-```{r}
-stormdata[stormdata$REFNUM==605943, c(PROPDMGEXP)]
-```
 
 ```{r}
 stormdata[stormdata$REFNUM==605943, c("PROPDMGEXP")] <- "M"
