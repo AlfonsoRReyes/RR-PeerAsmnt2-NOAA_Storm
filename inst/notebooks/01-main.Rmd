@@ -389,15 +389,17 @@ These are the results:
 
 7. Besides the identifiers `B`, `M` and `K`, in the variables `PROPDMGEXP` and `CROPDMGEXP`, there are additional characters and numbers entered in this variable. Since there is no way to etermine the units for the property or crop damage we are not considering these amounts. 
 
+8. Anoher interesting thing we noticed from the plot in the appendix is that until 1979 the economy damage due to weather events was below 1 billion USD, with exception of 1973 and 1974. From then onwards it just keep increasing, peaking in Katrina in 2005 with $100 billion in property and crop damage. The average impact on the economy in the past 25 years has been averaging 25 billion USD.
+
 
 ## Appendix
 
 ### Have the number of fatalities and injuries increased over the years?
 We have generated a couple of datasets that are much smaller in size than the original dataset.
 
-1. byYearEvent: is a dataset that contains a summary of the events, fatalities, injuries, economic losses in property and crops in millions of US$. 
+* byYearEvent: is a dataset that contains a summary of the events, fatalities, injuries, economic losses in property and crops in millions of US$. 
 
-2. byYearSummary: a dataset showing the year and the wather impact on life and the economy. Four variables: year, fatalities, injured and economy losses in millions of USD.
+* byYearSummary: a dataset showing the year and the wather impact on life and the economy. Four variables: year, fatalities, injured and economy losses in millions of USD.
 
 ```{r}
 # By year, by event
