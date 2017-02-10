@@ -137,6 +137,8 @@ These are the variable that we consider important for the analysis:
 
 
 ```{r}
+# read the raw data from original source and load to object stormdata
+# stormdata will be cleaned up, some variables converted and some corrections made.
 stormdata <- stormdata.raw %>%
   select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
          FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS) %>%
@@ -242,6 +244,11 @@ as_data_frame(stormdata)
 
 ### Clean up the dataset
 We will transform the variable `BGN_DATE` from a factor to a date variable. We will later use it for our summaries. We will also take out some variables that are not relevant to our study.
+
+```{r}
+load(paste(project.data, "stormdata.rda", sep = "/"))  # load the data
+```
+
 
 ```{r}
 stormdata.small <- stormdata %>% 
