@@ -284,7 +284,7 @@ grid.rect(gp=gpar(fill=NA))
 
 Tornados, Excessive heat, flash floods, heat and lightning are the weather events most harmful to the population accross the United States.
 
-### The 2nd Question
+## The 2nd Question
 
 ## Assessing the Economic Damage
 The property and crop damage are not in a unique monetary units; they use thousands, millions and billions. They are specified in the variables `PROPDMGEXP` and `CROPDMGEXP`.
@@ -340,6 +340,7 @@ Get the top 5 and top 10 causes of economic damage.
 byDamage.mm.top5 <- byDamage.mm[1:10, ]
 byDamage.mm.top5
 ```
+
 
 ```{r fig.asp=1}
 # plots for economic losses
