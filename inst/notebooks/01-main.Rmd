@@ -152,6 +152,11 @@ stormdata <- stormdata.raw %>%
 save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
+There is a typo in one of the observations in the California flood 2005/2006. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted around 2006 New Year.
+
+We are saving the correction in `stormdata.rda`. So, if the reader wants to reproduce the error, it wil be necessary to load the data from scratch, starting with downloading the file from the original source. The code above wll reproduce the steps necessary. To see the observation with the typo (it was writen "B" instead of "M" in the variable `PROPDMGEXP`), it corresponds to observation 605943 as identified by the variable `REFNUM`.
+
+
 ```{r}
 # floods in California from Xmas 2005 to around New Year 2006
 # one record improperly entered as Billions instead of millions REFNUM=605943
