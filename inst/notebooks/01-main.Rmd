@@ -191,10 +191,6 @@ str(stormdata)
 
 
 ```{r}
-str(stormdata)
-```
-
-```{r}
 # what are the states in the variable
 unique(stormdata$STATE)
 ```
