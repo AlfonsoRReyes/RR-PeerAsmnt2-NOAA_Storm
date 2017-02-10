@@ -476,12 +476,12 @@ save(byYearEvent, file = paste(project.data, "byYearEvent.rda", sep = "/"))
 #load(paste(project.data, "byYearEvent.rda", sep = "/"))  # load the data
 
 byYearSummary <- byYearEvent %>%
-  mutate(year = year(DATE)) %>%
-  group_by(year) %>%
-  summarize(fatalities = sum(fatalities), 
+  mutate(year = year(DATE)) %>%           # get only the year
+  group_by(year) %>%                      # group by year
+  summarize(fatalities = sum(fatalities), # calculate total fatalities and injuries
             injuries = sum(injuries),
-            damage.mm = sum(propdmg.M) + sum(cropdmg.M),
-            damage.bb = damage.mm / 1000) %>%
+            damage.mm = round(sum(propdmg.M) + sum(cropdmg.M), 0),  # total damage in millions
+            damage.bb = round(damage.mm / 1000, 2)) %>%       # total damage in billions
   arrange(desc(damage.bb))
 
 byYearSummary
