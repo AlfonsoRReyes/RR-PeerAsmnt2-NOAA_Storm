@@ -630,6 +630,10 @@ byYearSummary <- byYearEvent %>%
             damage.bb = round(damage.mm / 1000, 2)) %>%       # total damage in billions
   arrange(desc(damage.bb))
 
+# save losses by year
+save(byYearSummary, file = paste(project.data, 
+                                 "byYearSummary.rda", 
+                                 sep = "/"))
 byYearSummary
 ```
 
@@ -653,11 +657,15 @@ byYearSummary
 Years with the most economic damage:
 
 ```r
+# load data frame
+load(paste(project.data, "byYearSummary.rda", sep = "/"))
+
 q1 <- ggplot(byYearSummary, aes(x = year, y = damage.bb)) +
   geom_point() + 
   ggtitle("Impact on economy 1950-2011") + 
   labs(y = "Billions US$") +
   theme(plot.title = element_text(hjust=0.5))
+
 q2 <- ggplot(byYearSummary, aes(x = year, y = fatalities)) +
   geom_point() +
   ggtitle("impact on human life, 1950-2011") +
@@ -680,10 +688,6 @@ grid.rect(gp=gpar(fill=NA))
 
 
 
-```r
-# save losses by year
-save(byYearSummary, file = paste(project.data, "byYearSummary.rda", sep = "/"))
-```
 
 ### what is the worst weather event in 2005?
 
