@@ -328,8 +328,7 @@ We will start by converting the monetary damages to a consistent units. We will 
 byDamage <- stormdata %>%
   select(EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
   group_by(EVTYPE) %>%
-  mutate(PROPDMGEXP = as.factor(toupper(str_trim(PROPDMGEXP))),      # clean the string
-         CROPDMGEXP = as.factor(toupper(str_trim(CROPDMGEXP)))) %>%
+  # convert to unique dollar multiplier
   mutate(PROPDMG.K = ifelse(PROPDMGEXP == "K", PROPDMG * 1,
                      ifelse(PROPDMGEXP == "M", PROPDMG * 1000,
                      ifelse(PROPDMGEXP == "B", PROPDMG * 1E6, 0)))) %>%
