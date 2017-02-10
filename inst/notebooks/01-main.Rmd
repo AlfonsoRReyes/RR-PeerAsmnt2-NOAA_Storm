@@ -135,6 +135,8 @@ These are the variable that we consider important for the analysis:
         REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, 
         FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP, REMARKS
 
+### Clean up the dataset
+We will transform the variable `BGN_DATE` from a factor to a date variable. We will later use it for our summaries. We will also take out some variables that are not relevant to our study.
 
 ```{r}
 # read the raw data from original source and load to object stormdata
@@ -155,9 +157,14 @@ stormdata <- stormdata.raw %>%
 # save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
-```{r}
-str(stormdata)
+
+We have an observation ID with the variable `REFNUM`. We check if all its values are unique:
+```{r results='hold'}
+# REFNUM is the record id of the observation and is unique.
+length(unique(stormdata$REFNUM))
+range(unique(stormdata$REFNUM))
 ```
+
 
 There is a typo in one of the observations in the California flood 2005/2006. We noticed this while plotting the economic impact of the weather events. This code below will filter the event that started on Christmas 2005 and persisted around 2006 New Year.
 
@@ -204,35 +211,20 @@ save(stormdata, file = paste(project.data, "stormdata.rda", sep = "/"))
 ```
 
 
-To save memory we release now the 'stormdata.raw`  object.
-
-
-We have an observation ID with the variable `REFNUM`. We check if all its values are unique:
-
-```{r results='hold'}
-# REFNUM is the record id of the observation and is unique.
-length(unique(stormdata$REFNUM))
-range(unique(stormdata$REFNUM))
-```
-
 This is a view of the data frame that we will use in our analysis.
 ```{r}
 as_data_frame(stormdata)
 ```
 
-### Clean up the dataset
-We will transform the variable `BGN_DATE` from a factor to a date variable. We will later use it for our summaries. We will also take out some variables that are not relevant to our study.
+
 
 ```{r}
 load(paste(project.data, "stormdata.rda", sep = "/"))  # load the data
 ```
 
-
+Create a small data frame without the `REMARKS` variable.
 ```{r}
 stormdata.small <- stormdata %>% 
-  select(REFNUM, BGN_DATE, STATE, COUNTY, COUNTYNAME, EVTYPE, # take out
-           FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) %>%
-  mutate(DATE = mdy_hms(as.character(BGN_DATE))) %>%    # convert to date
   select(REFNUM, DATE, STATE, COUNTY, COUNTYNAME, EVTYPE,     # reorder
          FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP) 
 
