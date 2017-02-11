@@ -112,9 +112,9 @@ stormdata.raw <- read.csv(dataFile)
 ```{r results='hold'}
 # properties of the dataset
 dims <- dim(stormdata.raw)
+dims
 ```
 
-There are `r dims[1]` observations and `r dims[2]` variables.
 
 The names of the variables are:
 ```{r}
