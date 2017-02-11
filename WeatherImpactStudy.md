@@ -123,9 +123,13 @@ stormdata.raw <- read.csv(dataFile)
 ```r
 # properties of the dataset
 dims <- dim(stormdata.raw)
+dims
 ```
 
-There are 902297 observations and 37 variables.
+```
+[1] 902297     37
+```
+
 
 The names of the variables are:
 

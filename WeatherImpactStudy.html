@@ -211,8 +211,9 @@ stormdata.raw &lt;- read.csv(dataFile)
 <div id="how-our-raw-data-look" class="section level3">
 <h3>How our raw data look?</h3>
 <pre class="r"><code># properties of the dataset
-dims &lt;- dim(stormdata.raw)</code></pre>
-<p>There are 902297 observations and 37 variables.</p>
+dims &lt;- dim(stormdata.raw)
+dims</code></pre>
+<pre><code>[1] 902297     37</code></pre>
 <p>The names of the variables are:</p>
 <pre class="r"><code>names(stormdata.raw)</code></pre>
 <pre><code> [1] &quot;STATE__&quot;    &quot;BGN_DATE&quot;   &quot;BGN_TIME&quot;   &quot;TIME_ZONE&quot;  &quot;COUNTY&quot;    
