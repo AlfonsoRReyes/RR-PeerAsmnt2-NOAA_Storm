@@ -456,12 +456,11 @@ grid.rect(gp=gpar(fill=NA))
 
 
 
-```{r}
-
-```
-
 ### what is the worst weather event in 2005?
 ```{r}
+# load small data frame
+load(paste(project.data, "stormdata.small.rda", sep = "/"))
+
 # what is the worst weather event in 2005?
 worst <- stormdata.small %>%
   select(REFNUM, DATE, STATE, EVTYPE, PROPDMG, PROPDMGEXP) %>%
@@ -469,6 +468,15 @@ worst <- stormdata.small %>%
 
 as_data_frame(worst)
 ```
+
+
+
+### Unknown identifiers for monetary units
+
+There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
+There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. 
+
+In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data. Other characters or digits did not bring a special meaning to the dollar amount, so we didn't convert them even thoiugh we read the remarks to find some relationship.
 
 Show some events with doubtful monetary units.
 ```{r}
@@ -479,19 +487,15 @@ as_data_frame(events)
 ```
 
 
-### Unknown identifiers for monetary units
-There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
-There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. 
-
-In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data. Other characters or digits did not bring a special meaning to the dollar amount, so we didn't convert them even thoiugh we read the remarks to find some relationship.
-
 ```{r}
 unique(byDamage$PROPDMGEXP)
 ```
 
+
 ```{r}
 unique(byDamage$CROPDMGEXP)
 ```
+
 
 ```{r}
 summary(byDamage)
