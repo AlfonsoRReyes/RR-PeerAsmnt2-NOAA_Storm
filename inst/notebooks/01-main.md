@@ -387,14 +387,16 @@ p1 <- ggplot(byEvent.Fat, aes(x = reorder(EVTYPE, -fatal.sum), y = fatal.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Fatalities") +
   geom_text(aes(label=fatal.sum, vjust = -0.25)) +  
-  scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
+  scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10)) +
+  ggtitle("Weather events most harmful by Fatalities")
 
 # plot sorted by number of injuries
 p2 <- ggplot(byEvent.Inj, aes(x = reorder(EVTYPE, -injur.sum), y = injur.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Injuries") +
   geom_text(aes(label=injur.sum, vjust = -0.25)) +  
-  scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
+  scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10)) +
+  ggtitle("Weather events most harmful by Injuries")
 
 gridExtra::grid.arrange(p1, p2)
 grid.rect(gp=gpar(fill=NA))
