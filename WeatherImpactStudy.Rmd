@@ -1,6 +1,7 @@
 ---
 title: "Analysis of weather impact on people and the economy"
 author: "Alfonso R. Reyes"
+date: 2017-02-11
 output:
   html_document:
     keep_md: yes
@@ -111,9 +112,9 @@ stormdata.raw <- read.csv(dataFile)
 ```{r results='hold'}
 # properties of the dataset
 dims <- dim(stormdata.raw)
+dims
 ```
 
-There are `r dims[1]` observations and `r dims[2]` variables.
 
 The names of the variables are:
 ```{r}

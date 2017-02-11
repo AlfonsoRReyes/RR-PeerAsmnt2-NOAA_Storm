@@ -10,16 +10,13 @@ Alfonso R. Reyes
 2. Across the United States, which types of events have the greatest economic consequences?
 
 ## Synopsis
-<ten sentences>
-weather impact on the economy: property and crops.
-Does not take into account other effects such as defferred revenue, no income,
-Years recorded from 1950 till 2011.
-Investigate how much is the impact of the weather
-Impact on the popuplation: fatalities, injured.
-For the 1st question we will use the variables: EVTYPE, FATALITIES and INJURIES.
-For the 2nd question, we will use the variables: EVTYPE, PROPDMG, CROPDMG, PROPDMGEXP and CROPDMGEXP.
-Other analysis can later be performed such as if the weather effects have been improving or worsening, what states have suffered the largest impact, what counties have the highest economic loss, etc.
+This report will perform an analysis on the National Oceanic Atmospheric Administration's (NOAA) storm event database from 1950 to 2011 focusing on the weather impact on the population and the economy. We will download the dataset directly and then perform some clean up operations and filtering.
 
+We will see the impact on the population: fatalities, injured, and the effect on the economy: property and crops. It does not take into account other effects such as defferred revenue, no income, future revenues, etc.
+
+For the 1st question we will use these variables from the storm database: EVTYPE, FATALITIES and INJURIES. While for the 2nd question, we will use the variables: EVTYPE, PROPDMG, CROPDMG, PROPDMGEXP and CROPDMGEXP.
+
+Other analysis can later be performed such as if the weather effects have been improving or worsening, what states have suffered the largest impact, what counties have the highest economic loss, etc.
 
 
 ## Data Processing
@@ -390,14 +387,16 @@ p1 <- ggplot(byEvent.Fat, aes(x = reorder(EVTYPE, -fatal.sum), y = fatal.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Fatalities") +
   geom_text(aes(label=fatal.sum, vjust = -0.25)) +  
-  scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
+  scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10)) +
+  ggtitle("Weather events most harmful by Fatalities")
 
 # plot sorted by number of injuries
 p2 <- ggplot(byEvent.Inj, aes(x = reorder(EVTYPE, -injur.sum), y = injur.sum)) +
   geom_bar(stat = "identity") +
   xlab("Event Type") + ylab("Injuries") +
   geom_text(aes(label=injur.sum, vjust = -0.25)) +  
-  scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10))
+  scale_x_discrete(labels = function(EVTYPE) str_wrap(EVTYPE, width = 10)) +
+  ggtitle("Weather events most harmful by Injuries")
 
 gridExtra::grid.arrange(p1, p2)
 grid.rect(gp=gpar(fill=NA))
@@ -690,28 +689,45 @@ grid.rect(gp=gpar(fill=NA))
 
 
 
-
-
 ### what is the worst weather event in 2005?
 
 ```r
+# load small data frame
+load(paste(project.data, "stormdata.small.rda", sep = "/"))
+
 # what is the worst weather event in 2005?
 worst <- stormdata.small %>%
   select(REFNUM, DATE, STATE, EVTYPE, PROPDMG, PROPDMGEXP) %>%
   arrange(desc(PROPDMG))
-```
 
-```
-Error in eval(expr, envir, enclos): object 'stormdata.small' not found
-```
-
-```r
 as_data_frame(worst)
 ```
 
 ```
-Error in as_data_frame(worst): object 'worst' not found
+# A tibble: 902,297 × 6
+   REFNUM       DATE  STATE            EVTYPE PROPDMG PROPDMGEXP
+    <dbl>     <dttm> <fctr>            <fctr>   <dbl>     <fctr>
+1  778558 2009-07-26     NC THUNDERSTORM WIND    5000          K
+2  808182 2010-05-13     IL       FLASH FLOOD    5000          K
+3  808183 2010-05-13     IL       FLASH FLOOD    5000          K
+4  900646 2011-10-29     AM        WATERSPOUT    5000          K
+5  791393 2009-12-25     PR         LANDSLIDE    4800          K
+6  750915 2009-03-28     TN           TORNADO    4410          K
+7  762379 2009-05-12     OK THUNDERSTORM WIND    3500          K
+8  815064 2010-06-24     CT THUNDERSTORM WIND    3200          K
+9  749008 2009-02-11     IL         HIGH WIND    3000          K
+10 755010 2009-04-29     IN             FLOOD    3000          K
+# ... with 902,287 more rows
 ```
+
+
+
+### Unknown identifiers for monetary units
+
+There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
+There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. 
+
+In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data. Other characters or digits did not bring a special meaning to the dollar amount, so we didn't convert them even thoiugh we read the remarks to find some relationship.
 
 Show some events with doubtful monetary units.
 
@@ -734,12 +750,6 @@ as_data_frame(events)
 ```
 
 
-### Unknown identifiers for monetary units
-There are some unspecified units in `PROPDMGEXP` and `CROPDMGEXP`.
-There is no a reasonable way to determine the units or damage value from the remarks. Sometimes is thousands or in 10K, or other. 
-
-In two cases, we found that instead of "M" for millions the lowercase version of it "m" was used. We converted them to uppercase before summarizing the data. Other characters or digits did not bring a special meaning to the dollar amount, so we didn't convert them even thoiugh we read the remarks to find some relationship.
-
 
 ```r
 unique(byDamage$PROPDMGEXP)
@@ -751,6 +761,7 @@ Levels:  - ? + 0 1 2 3 4 5 6 7 8 B H K M
 ```
 
 
+
 ```r
 unique(byDamage$CROPDMGEXP)
 ```
@@ -759,6 +770,7 @@ unique(byDamage$CROPDMGEXP)
 [1]   M K B ? 0 2
 Levels:  ? 0 2 B K M
 ```
+
 
 
 ```r
