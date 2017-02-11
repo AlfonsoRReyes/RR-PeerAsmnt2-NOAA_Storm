@@ -18,16 +18,13 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA, error = TRUE)
 2. Across the United States, which types of events have the greatest economic consequences?
 
 ## Synopsis
-<ten sentences>
-weather impact on the economy: property and crops.
-Does not take into account other effects such as defferred revenue, no income,
-Years recorded from 1950 till 2011.
-Investigate how much is the impact of the weather
-Impact on the popuplation: fatalities, injured.
-For the 1st question we will use the variables: EVTYPE, FATALITIES and INJURIES.
-For the 2nd question, we will use the variables: EVTYPE, PROPDMG, CROPDMG, PROPDMGEXP and CROPDMGEXP.
-Other analysis can later be performed such as if the weather effects have been improving or worsening, what states have suffered the largest impact, what counties have the highest economic loss, etc.
+This report will perform an analysis on the National Oceanic Atmospheric Administration's (NOAA) storm event database from 1950 to 2011 focusing on the weather impact on the population and the economy. We will download the dataset directly and then perform some clean up operations and filtering.
 
+We will see the impact on the population: fatalities, injured, and the effect on the economy: property and crops. It does not take into account other effects such as defferred revenue, no income, future revenues, etc.
+
+For the 1st question we will use these variables from the storm database: EVTYPE, FATALITIES and INJURIES. While for the 2nd question, we will use the variables: EVTYPE, PROPDMG, CROPDMG, PROPDMGEXP and CROPDMGEXP.
+
+Other analysis can later be performed such as if the weather effects have been improving or worsening, what states have suffered the largest impact, what counties have the highest economic loss, etc.
 
 
 ## Data Processing
